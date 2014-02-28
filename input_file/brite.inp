@@ -1,0 +1,28 @@
+[general]
+filename: brite.dat
+
+[ss]
+poly_gr_ss: 10
+cfc_lb1: 0.1
+cfc_ub1: 1.5
+cfc_lb2: 0.1
+cfc_ub2: 1.5
+cfc_ig1: 0.5
+cfc_ig2: 0.5
+A_lb: -2.0
+A_ub: 2.0
+A_ig: 0.5
+yp_c: 0.2
+
+[ps]
+poly_gr_ps: 8
+cfc_lb1: 0.1
+cfc_ub1: 1.5
+cfc_lb2: 0.1
+cfc_ub2: 1.5
+cfc_ig1: 0.5
+cfc_ig2: 0.5
+A_lb: -2.0
+A_ub: 2.0
+A_ig: 0.5
+yp_c: 0.5
