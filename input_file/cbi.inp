@@ -1,5 +1,5 @@
 [general]
-filename: cbi.dat
+filename: profile/cbi.dat
 
 [ss]
 poly_gr_ss: 9
