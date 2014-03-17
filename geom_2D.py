@@ -312,6 +312,7 @@ class BF_div:
     
     def __init__(self, xy_p, c_err = 1.0, n_ord = 2.0):
         self._xy_p = xy_p
+        self._t = self.curvi_abscissa(xy_p)
         self._n_ord = n_ord
 
     def __call__(self, P):
@@ -319,8 +320,16 @@ class BF_div:
         return np.linalg.norm(self._err(), ord = self._n_ord)
         
     def _err(self):
-#         return np.where(self._xy_p[1,:] != 0.0, abs(self._xy_p[1,:] - self._cst(self._xy_p[0,:]))/abs(self._xy_p[1,:])**self._c_err, abs(self._xy_p[1,:] - self._cst(self._xy_p[0,:])))
-        return 0
+        curve, xy_p, t = self._curve, self._xy_p, self._t
+        x = np.ones(len(t))
+        y = np.ones(len(t))
+        err = np.ones(len(t))
+        for i in xrange(t):
+            x[i], y[i] = curve(t[i])
+            err[i] = abs(xy_p[0,i]- x[i]) + abs(xy_p[1,i]- y[i])
+            
+        err = abs(xy_p[0,:])
+        return 
 
     @staticmethod
     def curvi_abscissa( xy_p):
@@ -359,8 +368,8 @@ class BF_div:
 if __name__=='__main__':            
     filename = 'div.dat'           
     xy_p = pp.read_xy_p(filename) 
-    plot(xy_p[0,:], xy_p[1,:] )  
-    print BF_div.curvi_abscissa(xy_p) 
+#     plot(xy_p[0,:], xy_p[1,:] )  
+#     print BF_div.curvi_abscissa(xy_p) 
     """
         creare una Bezier che usa array e non punti ed il gioco e fatto
         usare la classe div per trovare i punti di controllo iniziali
