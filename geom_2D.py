@@ -1,6 +1,12 @@
 #from pylab import *
+import sys
+utility_folder = '../utility/'
+sys.path.insert(0, utility_folder)
 from matplotlib.pylab import *
 from math import factorial
+import util as ut
+import preproc_prof as pp
+
 # import numpy as np
 
 _unzip = lambda zipped: zip(*zipped) # unzip a list of tuples
@@ -295,115 +301,80 @@ class Nozzle:
         """      
         self._conv = Conv(lc, Ain, m1, m2, nc, type)
         self._div = Div(ld, Aout, m2, m3, nd, type)
-#         self._lc = lc
-#         self._ld = ld
-#         self._Ain = Ain
-#         self._Aout = Aout
-#         self._m1 = m1
-#         self._m2 = m2
-#         self._m3 = m3
-#         self._nc = nc
-#         self._nd = nd
-#         self._type = type
-#         self._Pc = self._pc()
-#         self._Pd = self._pd()
-#         self._conv = Bezier(self._Pc)
-#         self._div  = Bezier(self._Pd)
-        
-    
-    
-#     def _pc(self):
-#         m1, m2, nc, lc, type = self._m1, self._m2, self._nc, self._lc, self._type
-#         """ 
-#             equispaced control point along x
-#         
-#         """
-#         if type == 1:
-#             dx = lc/(nc-1)
-#             dy1 = dx*m1
-#             p01 = Point(-lc, self._Ain)
-#             p11 = p01 + Point(dx, dy1)
-#             pn1 = Point(0.0, 1.0)
-#             dy2 = dx*m2
-#             pn_11 = pn1 - Point(dx,dy2)
-#             pint = [p01, p11, pn_11, pn1]
-#             n = len(pint)
-#             x = np.ones(n)
-#             y = np.ones(n)
-#             for i in xrange(n):
-#                 x[i], y[i] = pint[i].split()
-#             xp = np.ones(nc)
-#             for i in xrange(nc):
-#                 xp[i] = -lc +  i*dx     
-#         
-#         
-#         from scipy import interpolate
-#         f = interpolate.lagrange(x, y)
-#         yp = f(xp)
-#         print x, y
-#         print xp, yp
-#             
-# #         f = interpolate.interp1d(x, y)
-#         pct = []
-#         for i in xrange(nc):
-#             pct.append(Point(xp[i], yp[i]))
-# #         pct.append(pn1)  
-#         return pct
-# 
-#     
-#     
-#     def _pd(self):
-#         m2, m3, nd, ld, type = self._m2, self._m3, self._nd,  self._ld, self._type
-#         if type == 1:
-#             dx = ld/(nd-1)
-#             p02 = Point(0, 1.0)
-#             dy1 = m2*dx
-#             p12 = p02 + Point(dx, dy1)
-#             pn2 = Point( ld, self._Aout)
-#             dy2 = m3*dx
-#             pn_12 = pn2 - Point(dx, dy2)
-#             pint =  [p02, p12, pn_12, pn2]
-#             n = len(pint)
-#             x = np.ones(n)
-#             y = np.ones(n)
-#             for i in xrange(n):
-#                 x[i], y[i] = pint[i].split()
-#             xp = np.ones(nd)
-#             for i in xrange(nd):
-#                 xp[i] =  i*dx     
-#         
-#         
-#         from scipy import interpolate
-#         f = interpolate.lagrange(x, y)
-#         yp = f(xp)
-#         print x, y
-#         print xp, yp
-#             
-# #         f = interpolate.interp1d(x, y)
-#         pct = []
-#         for i in xrange(nd):
-#             pct.append(Point(xp[i], yp[i]))
-# #         pct.append(pn1)  
-#         return pct
-        
-        
+
     def plot(self):
         self._conv.plot()
         self._div.plot()   
          
+
+
+class BF_div:
+    
+    def __init__(self, xy_p, c_err = 1.0, n_ord = 2.0):
+        self._xy_p = xy_p
+        self._n_ord = n_ord
+
+    def __call__(self, P):
+        self._curve = Bezier(P)
+        return np.linalg.norm(self._err(), ord = self._n_ord)
+        
+    def _err(self):
+#         return np.where(self._xy_p[1,:] != 0.0, abs(self._xy_p[1,:] - self._cst(self._xy_p[0,:]))/abs(self._xy_p[1,:])**self._c_err, abs(self._xy_p[1,:] - self._cst(self._xy_p[0,:])))
+        return 0
+
+    @staticmethod
+    def curvi_abscissa( xy_p):
+        dist = np.ones(len(xy_p[0,:])-1)
+        t = np.ones(len(xy_p[0,:]))
+        t[0] = 0.0
+        for i in xrange(len(dist)):
+            dist[i]= pp.distance_2p(xy_p[:,i],xy_p[:,i+1])
+#             print xy_p[:,i],xy_p[:,i+1]
+            t[i+1] = t[i] + dist[i]
+        t /= t[len(t)-1]
+        return t
+#     @staticmethod
+#     def init_cfc( cfc_ig1 = 0.4, cfc_ig2 = 0.4):
+#         N = np.ones(2)
+#         N[0] *= cfc_ig1
+#         N[1] *= cfc_ig2
+#         return N
+ 
+#     @staticmethod
+#     def init_A(poly_gr = 5, A_ig = 0.8):
+#         A = np.ones(poly_gr+1)
+#         A *= A_ig
+#         return A
+# 
+#     @staticmethod    
+#     def bound_cfc( cfc_lb1 = 0.1, cfc_ub1 = 1.5, cfc_lb2 = 0.1 , cfc_ub2 = 1.4):
+#         N = np.ones((2,2), dtype = float)
+#         N[0,0] *= cfc_lb1
+#         N[1,0] *= cfc_lb2
+#         N[0,1] *= cfc_ub1
+#         N[1,1] *= cfc_ub2
+#         return N
+
+
 if __name__=='__main__':            
-            
-            
+    filename = 'div.dat'           
+    xy_p = pp.read_xy_p(filename) 
+    plot(xy_p[0,:], xy_p[1,:] )  
+    print BF_div.curvi_abscissa(xy_p) 
+    """
+        creare una Bezier che usa array e non punti ed il gioco e fatto
+        usare la classe div per trovare i punti di controllo iniziali
+    """       
 #     p0 = Point(0.0, 0.0)
 #     p1 = Point(0.5, 0.5)
 #     p2 = Point(1.0, 0.0)
 #     p3 = Point(1.0, 1.0)
 #     P= [p0, p1, p2, p3]
 #     
-    c = Nozzle()
+#     c = Nozzle()
 #     d = Nozzle(nc = 5, nd = 5)
 #     e = Nozzle(nc = 6, nd = 6)
-    c.plot()
+#     c.plot()
 #     d.plot()
 #     e.plot()
     axis('equal')
