@@ -161,7 +161,7 @@ if __name__=='__main__':
     cst_ps = Cst(Aps)
     cst_ss = Cst(Ass)
 
-   # print of_ss(Ass), of_ps(Aps)
+#     print of_ss(Ass), of_ps(Aps)
     f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex= True, sharey = True)
     
     ax1.plot(xy_ps[0,:], xy_ps[1,:] , 'r-', xy_ss[0,:],xy_ss[1,:], 'r-')
@@ -170,15 +170,15 @@ if __name__=='__main__':
     ax1.axis('equal')
     ax1.set_xlabel('x')
     ax1.set_ylabel('y')
-   # ax1.set_legend(['real profile'], ['paramatrized profile'])
+#    ax1.set_legend(['real profile'], ['paramatrized profile'])
 
     p21, p22, p23, p24, = ax2.plot(xy_ps[0,:], xy_ps[1,:], 'r-', xy_ps[0,:], xy_ps[1,:], 'bo', xy_ss[0,:],xy_ss[1,:],'r-', xy_ss[0,:], xy_ss[1,:], 'bo')
     p25,  = ax2.plot(xy_ss[0,:], cst_ss(xy_ss[0,:]), 'b-')
     p26,  = ax2.plot(xy_ps[0,:], cst_ps(xy_ps[0,:]), 'b-')
     legend([p21, p24, p26], ["real", "real points", "parametrized"], bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=3, mode="expand", borderaxespad=0.)
-   # plt.plot(xy_ps[0,:], xy_ps[1,:], 'bo')
-   # plt.plot(xy_ss[0,:], xy_ss[1,:])
-   # plt.plot(xy_ss[0,:], xy_ss[1,:], 'bo')
+#    plt.plot(xy_ps[0,:], xy_ps[1,:], 'bo')
+#    plt.plot(xy_ss[0,:], xy_ss[1,:])
+#    plt.plot(xy_ss[0,:], xy_ss[1,:], 'bo')
     
     ax3.plot(xy_ps[0,:], xy_ps[1,:], 'r-')
     ax3.plot(xy_ss[0,:], xy_ss[1,:], 'r-')
