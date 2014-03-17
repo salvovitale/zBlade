@@ -164,13 +164,124 @@ class Bezier:
         plot(self._X, self._Y)
         plot(self._X, self._Y, 'bo')
         plot(self._x, self._y)
-    
         
- 
- 
+        
+        
+##################################################  NOOZLE GEO. MODELER ###############################################################        
+    
+         
+class Conv:
+    def __init__(self, lc = 2.0, Ain = 2.0, m1 = -0.2, m2 = 0.0, nc = 4, type = 1):
+        self._lc = lc
+        self._Ain = Ain
+        self._m1 = m1
+        self._m2 = m2
+        self._nc = nc
+        self._type = type
+        self._Pc = self._pc()
+        self._curve = Bezier(self._Pc)
+        
+    def _pc(self):
+        m1, m2, nc, lc, type = self._m1, self._m2, self._nc, self._lc, self._type
+        """ 
+            equispaced control point along x
+        
+        """
+        if type == 1:
+            dx = lc/(nc-1)
+            dy1 = dx*m1
+            p01 = Point(-lc, self._Ain)
+            p11 = p01 + Point(dx, dy1)
+            pn1 = Point(0.0, 1.0)
+            dy2 = dx*m2
+            pn_11 = pn1 - Point(dx,dy2)
+            pint = [p01, p11, pn_11, pn1]
+            n = len(pint)
+            x = np.ones(n)
+            y = np.ones(n)
+            for i in xrange(n):
+                x[i], y[i] = pint[i].split()
+            xp = np.ones(nc)
+            for i in xrange(nc):
+                xp[i] = -lc +  i*dx     
+            
+            
+        from scipy import interpolate
+        f = interpolate.lagrange(x, y)
+        yp = f(xp)
+        print x, y
+        print xp, yp
+            
+#         f = interpolate.interp1d(x, y)
+        pct = []
+        for i in xrange(nc):
+            pct.append(Point(xp[i], yp[i]))
+#         pct.append(pn1)  
+        return pct        
+     
+    def plot(self):
+        self._curve.bplot()
+             
+
+
+
+
+class Div:
+    
+    def __init__(self, ld = 5.0, Aout = 3.0, m2 = 0.0, m3 = 0.1, nd = 4, type = 1):
+        self._ld = ld
+        self._Aout = Aout
+        self._m2 = m2
+        self._m3 = m3
+        self._nd = nd
+        self._type = type
+        self._Pd = self._pd()
+        self._curve  = Bezier(self._Pd)
+        
+    def _pd(self):
+        m2, m3, nd, ld, type = self._m2, self._m3, self._nd,  self._ld, self._type
+        if type == 1:
+            dx = ld/(nd-1)
+            p02 = Point(0, 1.0)
+            dy1 = m2*dx
+            p12 = p02 + Point(dx, dy1)
+            pn2 = Point( ld, self._Aout)
+            dy2 = m3*dx
+            pn_12 = pn2 - Point(dx, dy2)
+            pint =  [p02, p12, pn_12, pn2]
+            n = len(pint)
+            x = np.ones(n)
+            y = np.ones(n)
+            for i in xrange(n):
+                x[i], y[i] = pint[i].split()
+            xp = np.ones(nd)
+            for i in xrange(nd):
+                xp[i] =  i*dx     
+        
+        
+        from scipy import interpolate
+        f = interpolate.lagrange(x, y)
+        yp = f(xp)
+        print x, y
+        print xp, yp
+            
+#         f = interpolate.interp1d(x, y)
+        pct = []
+        for i in xrange(nd):
+            pct.append(Point(xp[i], yp[i]))
+#         pct.append(pn1)  
+        return pct
+        
+    def plot(self):
+        self._curve.bplot()   
+
+
+
+
+     
 class Nozzle:
     
-    def __init__(self, lc = 2.0, ld = 5.0, Ain = 2.0, Aout = 3.0, m1 = -0.2, m2 = 0.0, m3 = 0.1, nc = 3, nd = 3, type = 1):  
+    def __init__(self, lc = 2.0, ld = 5.0, Ain = 2.0, Aout = 3.0, m1 = -0.2, m2 = 0.0, m3 = 0.1, nc = 4, nd = 4, type = 1):  
         """
         construct 2D - nozzle with 2 Bezier curve
 
@@ -182,65 +293,104 @@ class Nozzle:
         all these quantities are adimensinal over Ath
         
         """      
-
-        self._lc = lc
-        self._ld = ld
-        self._Ain = Ain
-        self._Aout = Aout
-        self._m1 = m1
-        self._m2 = m2
-        self._m3 = m3
-        self._nc = nc
-        self._nd = nd
-        self._type
-        self._Pc = self._pc()
-        self._Pd = self._pd()
-        self._conv = Bezier(self._Pc)
-        self._div  = Bezier(self._Pd)
-    
-    
-    def _pc(self):
-        m1, m2, nc, lc, type = self._m1, self._m2, self._nc, self._lc, self.type
-        if type == 1:
-            dx = lc/nc
-            dy1 = dx*m1
-            p01 = Point(0.0, self._Ain)
-            p11 = p01 + Point(dx, dy1)
-            pn1 = Point(lc, 1.0)
-            dy2 = dx*m2
-            pn_11 = pn1 - Point(dx,dy2)
-            pint = [p01, p11, pn_11, pn1]
-            n = len(pint)
-            x = np.ones(n)
-            y = np.ones(n)
-            for i in xrange(n):
-                x[i], y[i] = pint[i].split()
-            xp = np.ones[nc+1]
-            for i in xrange(nc+1):
-                xp[i] =     
-        from scipy import interpolate
-        f = interpolate.interp1d(x, y)
-            
-            
-        f = interpolate.interp1d(x, y)  
-        return [p01, p11, pn_11, pn1]
-    
-    
-    def _pd(self):
-        m2, m3, nd, lc, ld = self._m2, self._m3, self._nd, self._lc, self._ld
-        dx = ld/nd
-        p02 = Point(lc, 1.0)
-        dy1 = m2*dx
-        p12 = p02 + Point(dx, dy1)
-        pn2 = Point(lc + ld, self._Aout)
-        dy2 = m3*dx
-        pn_12 = pn2 - Point(dx, dy2)
+        self._conv = Conv(lc, Ain, m1, m2, nc, type)
+        self._div = Div(ld, Aout, m2, m3, nd, type)
+#         self._lc = lc
+#         self._ld = ld
+#         self._Ain = Ain
+#         self._Aout = Aout
+#         self._m1 = m1
+#         self._m2 = m2
+#         self._m3 = m3
+#         self._nc = nc
+#         self._nd = nd
+#         self._type = type
+#         self._Pc = self._pc()
+#         self._Pd = self._pd()
+#         self._conv = Bezier(self._Pc)
+#         self._div  = Bezier(self._Pd)
         
-        return [p02, p12, pn_12, pn2]
+    
+    
+#     def _pc(self):
+#         m1, m2, nc, lc, type = self._m1, self._m2, self._nc, self._lc, self._type
+#         """ 
+#             equispaced control point along x
+#         
+#         """
+#         if type == 1:
+#             dx = lc/(nc-1)
+#             dy1 = dx*m1
+#             p01 = Point(-lc, self._Ain)
+#             p11 = p01 + Point(dx, dy1)
+#             pn1 = Point(0.0, 1.0)
+#             dy2 = dx*m2
+#             pn_11 = pn1 - Point(dx,dy2)
+#             pint = [p01, p11, pn_11, pn1]
+#             n = len(pint)
+#             x = np.ones(n)
+#             y = np.ones(n)
+#             for i in xrange(n):
+#                 x[i], y[i] = pint[i].split()
+#             xp = np.ones(nc)
+#             for i in xrange(nc):
+#                 xp[i] = -lc +  i*dx     
+#         
+#         
+#         from scipy import interpolate
+#         f = interpolate.lagrange(x, y)
+#         yp = f(xp)
+#         print x, y
+#         print xp, yp
+#             
+# #         f = interpolate.interp1d(x, y)
+#         pct = []
+#         for i in xrange(nc):
+#             pct.append(Point(xp[i], yp[i]))
+# #         pct.append(pn1)  
+#         return pct
+# 
+#     
+#     
+#     def _pd(self):
+#         m2, m3, nd, ld, type = self._m2, self._m3, self._nd,  self._ld, self._type
+#         if type == 1:
+#             dx = ld/(nd-1)
+#             p02 = Point(0, 1.0)
+#             dy1 = m2*dx
+#             p12 = p02 + Point(dx, dy1)
+#             pn2 = Point( ld, self._Aout)
+#             dy2 = m3*dx
+#             pn_12 = pn2 - Point(dx, dy2)
+#             pint =  [p02, p12, pn_12, pn2]
+#             n = len(pint)
+#             x = np.ones(n)
+#             y = np.ones(n)
+#             for i in xrange(n):
+#                 x[i], y[i] = pint[i].split()
+#             xp = np.ones(nd)
+#             for i in xrange(nd):
+#                 xp[i] =  i*dx     
+#         
+#         
+#         from scipy import interpolate
+#         f = interpolate.lagrange(x, y)
+#         yp = f(xp)
+#         print x, y
+#         print xp, yp
+#             
+# #         f = interpolate.interp1d(x, y)
+#         pct = []
+#         for i in xrange(nd):
+#             pct.append(Point(xp[i], yp[i]))
+# #         pct.append(pn1)  
+#         return pct
+        
         
     def plot(self):
-        self._conv.bplot()
-        self._div.bplot()    
+        self._conv.plot()
+        self._div.plot()   
+         
 if __name__=='__main__':            
             
             
@@ -251,8 +401,11 @@ if __name__=='__main__':
 #     P= [p0, p1, p2, p3]
 #     
     c = Nozzle()
-    
+#     d = Nozzle(nc = 5, nd = 5)
+#     e = Nozzle(nc = 6, nd = 6)
     c.plot()
+#     d.plot()
+#     e.plot()
     axis('equal')
 #     t = 0.5
     
