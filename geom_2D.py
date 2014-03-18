@@ -15,6 +15,19 @@ def _C(n, k):
     # binomial coefficient == n! / (i!(n - i)!)
     return factorial(n) / (factorial(k) * factorial(n - k))
 
+
+
+def curvi_abscissa(xy_p):
+    dist = np.ones(len(xy_p[0,:])-1)
+    t = np.ones(len(xy_p[0,:]))
+    t[0] = 0.0
+    for i in xrange(len(dist)):
+        dist[i]= pp.distance_2p(xy_p[:,i],xy_p[:,i+1])
+#             print xy_p[:,i],xy_p[:,i+1]
+        t[i+1] = t[i] + dist[i]
+    t /= t[len(t)-1]
+    return t
+
 # class Point
 class Point:
     def __init__(self, x = 0.0, y = 0.0):
@@ -105,6 +118,28 @@ class Lagrange:
             y += Y[i] * p_i
         return x, y    
     
+
+class Plot:
+    
+    def __init__(self, curve, discr = 100):
+        self._curve = curve
+        self._discr = discr
+        self._x, self._y = self._generate()
+        
+        
+    def __call__(self):  
+        plot(self._curve.get_x(), self._curve.get_y())
+        plot(self._curve.get_x(), self._curve.get_y(), 'bo')
+        plot(self._x, self._y)
+                    
+    def _generate(self):
+        t = np.linspace(0.0, 1.0, self._discr)
+        x = np.ones(self._discr)
+        y = np.ones(self._discr)
+        for i in xrange(len(t)):
+            x[i], y[i] = self._curve(t[i])
+        return x, y    
+
     
 class Bezier:
     def __init__(self, P, discr = 100):
@@ -117,8 +152,7 @@ class Bezier:
         self._P = P
         self._X, self._Y = self.sep()  
         self._bc = self._bn()
-        self._discr = discr
-        self._x, self._y = self._generate()
+        
         
     def sep(self):
         n, P = self._n, self._P
@@ -141,14 +175,7 @@ class Bezier:
         y = sum(Y*bc*berns)
         return x, y     
         
-    def _generate(self):
-        t = np.linspace(0.0, 1.0, self._discr)
-        x = np.ones(self._discr)
-        y = np.ones(self._discr)
-        for i in xrange(len(t)):
-            x[i], y[i] = self(t[i])
-        return x, y
-    
+           
     def _bn(self):
         n = self._n
         bc = np.ones(n)
@@ -156,7 +183,7 @@ class Bezier:
             bc[i] = _C(n-1,i)
         return bc 
        
-    def get_p(self):
+    def get_cp(self):
         return self._P
     
     def get_ncp(self):
@@ -169,17 +196,18 @@ class Bezier:
     def get_y(self):
         return self._Y
     
-    def bplot(self):    
-#         plot(self._X, self._Y)
-        plot(self._X, self._Y, 'bo')
-        plot(self._x, self._y)
+    def plot(self):
+        a = Plot(self)
+        a()
+    
+    
         
         
         
 ##################################################  NOOZLE GEO. MODELER ###############################################################        
     
          
-class Conv:
+class Conv(Bezier):
     def __init__(self, lc = 2.0, Ain = 2.0, m1 = -0.2, m2 = 0.0, nc = 4, type = 1):
         self._lc = lc
         self._Ain = Ain
@@ -188,7 +216,7 @@ class Conv:
         self._nc = nc
         self._type = type
         self._Pc = self._pc()
-        self._curve = Bezier(self._Pc)
+        Bezier.__init__(self, self._Pc)
         
     def _pc(self):
         m1, m2, nc, lc, type = self._m1, self._m2, self._nc, self._lc, self._type
@@ -228,14 +256,13 @@ class Conv:
 #         pct.append(pn1)  
         return pct        
      
-    def plot(self):
-        self._curve.bplot()
+    
              
 
 
 
 
-class Div:
+class Div(Bezier):
     
     def __init__(self, ld = 5.0, Aout = 3.0, m2 = 0.0, m3 = 0.1, nd = 4, type = 1):
         self._ld = ld
@@ -244,12 +271,8 @@ class Div:
         self._m3 = m3
         self._nd = nd
         self._type = type
-        self._Pd = self._pd()
-        self._curve  = Bezier(self._Pd)
-        
-    def __call__(self,t):
-         return self._curve(t)   
-        
+        Bezier.__init__(self, self._pd())
+      
     def _pd(self):
         m2, m3, nd, ld, type = self._m2, self._m3, self._nd,  self._ld, self._type
         if type == 1:
@@ -283,25 +306,6 @@ class Div:
             pct.append(Point(xp[i], yp[i]))
 #         pct.append(pn1)  
         return pct
-        
-    def plot(self):
-        self._curve.bplot()  
-    
-    def get_curve(self):
-        return self._curve    
-    
-    def get_cp(self):
-        return self._curve.get_p()
-    
-    def get_ncp(self):
-        return self._curve.get_ncp() 
-    
-    def get_x(self):
-        return self._curve.get_x()
-    
-    
-    def get_y(self):
-        return self._curve.get_y()
 
 
 
@@ -336,37 +340,17 @@ class Bezier_Ar(Bezier):
         y = P[1,:]
         return x, y        
 
-class BF_div:
+class BF_div(Div):
     
     def __init__(self, xy_p, ncp = 4):
         self._xy_p = xy_p
-        self._t = self.curvi_abscissa(xy_p)
-        self._ncp = ncp
-        self._curve = self._init_curve()
+        self._s = curvi_abscissa(xy_p)
+        self._init_curve(ncp)
+        
     
-        
-    def __call__(self, A):
-        P = self.get_P(A)
-        self._fit = Bezier(P)
-        return np.linalg.norm(self._err(), ord = 2.0)
-        
-    def _err(self):
-        curve, xy_p, t = self._curve, self._xy_p, self._t
-        x = np.ones(len(t))
-        y = np.ones(len(t))
-        err = np.ones(len(t))
-        for i in xrange(len(t)):
-            x[i], y[i] = curve(t[i])
-            
-            err[i] = abs(xy_p[0,i]- x[i]) + abs(xy_p[1,i]- y[i]) #it may be vectorized
-            
-#         err = abs(xy_p[0,:])
-        return err
-            
-        
-    def _init_curve(self):
+    def _init_curve(self, ncp):
         _ld, _m2, _m3 , _Aout = self._init_param()    
-        return  Div(ld =_ld, Aout = _Aout, m2 = _m2, m3 = _m3, nd = self._ncp)
+        Div.__init__(self, ld =_ld, Aout = _Aout, m2 = _m2, m3 = _m3, nd = ncp)
         
     def _init_param(self):
         xy_p = self._xy_p
@@ -375,22 +359,44 @@ class BF_div:
         Aout = xy_p[1,l-1]
         m2 = 0.0
         m3 = (xy_p[1,l-1] - xy_p[1,l-2])/(xy_p[0,l-1] - xy_p[0,l-2])
-        return ld, m2, m3, Aout
+        return ld, m2, m3, Aout    
 
-
-
+    
+    def __call__(self, A):
+        P = self.get_P(A)
+        self._fit = Bezier(P)
+        return np.linalg.norm(self._err(), ord = 2.0)   
+        
+    
+        
+    def _err(self):
+        xy_p, s =  self._xy_p, self._s
+        x = np.ones(len(s))
+        y = np.ones(len(s))
+        err = np.ones(len(s))
+        for i in xrange(len(s)):
+            x[i], y[i] = Bezier.__call__(self, s[i])
+            
+            err[i] = abs(xy_p[0,i]- x[i]) + abs(xy_p[1,i]- y[i]) #it may be vectorized
+            
+#         err = abs(xy_p[0,:])
+        return err
+            
+        
+ 
     def get_P(self, A):
-        x, y = self._curve.get_x(), self._curve.get_y()
-        n = self._curve.get_ncp()
+        x, y = self.get_x(), self.get_y()
+#         print x,y
+        n = self.get_ncp()
         for i in xrange(n-2):
             y[i+1] = A[i]
         P = []
         for i in xrange(n):
             P.append(Point(x[i], y[i]))
         return P
-    
+     
     def get_A(self, P):
-        n = self._curve.get_ncp()
+        n = self.get_ncp()
         x, y = np.ones(len(P)), np.ones(len(P))
         for i in xrange(n):
             x[i], y[i] = P[i].split() 
@@ -400,69 +406,41 @@ class BF_div:
         return A    
     
     def get_bounds(self):
-        xy_p, n = self._xy_p, self._curve.get_ncp()
+        xy_p, n = self._xy_p, self.get_ncp()
         B  = np.ones((n-2 , 2), dtype = float)
         B[:,0] *= xy_p[1,0]
         B[:,1] *= xy_p[1,len(xy_p[0,:])-1]
         return B
     
-    def get_curve(self):
-        return self._curve
     
     
         
            
-    @staticmethod
-    def curvi_abscissa(xy_p):
-        dist = np.ones(len(xy_p[0,:])-1)
-        t = np.ones(len(xy_p[0,:]))
-        t[0] = 0.0
-        for i in xrange(len(dist)):
-            dist[i]= pp.distance_2p(xy_p[:,i],xy_p[:,i+1])
-#             print xy_p[:,i],xy_p[:,i+1]
-            t[i+1] = t[i] + dist[i]
-        t /= t[len(t)-1]
-        return t
-#     @staticmethod
-#     def init_cfc( cfc_ig1 = 0.4, cfc_ig2 = 0.4):
-#         N = np.ones(2)
-#         N[0] *= cfc_ig1
-#         N[1] *= cfc_ig2
-#         return N
- 
-#     @staticmethod
-#     def init_A(poly_gr = 5, A_ig = 0.8):
-#         A = np.ones(poly_gr+1)
-#         A *= A_ig
-#         return A
-# 
-#     @staticmethod    
-#     def bound_cfc( cfc_lb1 = 0.1, cfc_ub1 = 1.5, cfc_lb2 = 0.1 , cfc_ub2 = 1.4):
-#         N = np.ones((2,2), dtype = float)
-#         N[0,0] *= cfc_lb1
-#         N[1,0] *= cfc_lb2
-#         N[0,1] *= cfc_ub1
-#         N[1,1] *= cfc_ub2
-#         return N
+
+
 
 
 if __name__=='__main__':            
     filename = 'div.dat'           
     xy_p = pp.read_xy_p(filename) 
     fit = BF_div(xy_p, 8)
-    Po = fit.get_curve().get_cp()
+    Po = fit.get_cp()
+#     print Po
     Ao = fit.get_A(Po)
+#     print Ao
     B =fit.get_bounds()
 #     print Po, Ao
-    print B
-    plot(xy_p[0,:], xy_p[1,:] )  
-    fit.get_curve().plot()
+#     print B
+#     plot(xy_p[0,:], xy_p[1,:] )  
+#     fit.get_curve().bplot()
     
     A = scipy.optimize.fmin_slsqp(fit, Ao, bounds = B, iter = 1000)
     print A
     P = fit.get_P(A)
     fit_curve = Bezier(P)
-    fit_curve.bplot()
+    fit_curve.plot()
+#     p = Plot(fit_curve)
+#     p()
 #     print BF_div.curvi_abscissa(xy_p) 
     """
         creare una Bezier che usa array e non punti ed il gioco e fatto
