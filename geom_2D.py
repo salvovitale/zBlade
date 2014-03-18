@@ -6,7 +6,7 @@ from matplotlib.pylab import *
 from math import factorial
 import util as ut
 import preproc_prof as pp
-
+import scipy.optimize
 # import numpy as np
 
 _unzip = lambda zipped: zip(*zipped) # unzip a list of tuples
@@ -115,12 +115,12 @@ class Bezier:
         """
         self._n = len(P) # control point iterator
         self._P = P
-        self._X, self._Y = self._sep()  
+        self._X, self._Y = self.sep()  
         self._bc = self._bn()
         self._discr = discr
         self._x, self._y = self._generate()
         
-    def _sep(self):
+    def sep(self):
         n, P = self._n, self._P
         x = np.ones(n)
         y = np.ones(n)
@@ -158,6 +158,9 @@ class Bezier:
        
     def get_p(self):
         return self._P
+    
+    def get_ncp(self):
+        return self._n
         
     def get_x(self):
         return self._X
@@ -167,7 +170,7 @@ class Bezier:
         return self._Y
     
     def bplot(self):    
-        plot(self._X, self._Y)
+#         plot(self._X, self._Y)
         plot(self._X, self._Y, 'bo')
         plot(self._x, self._y)
         
@@ -215,8 +218,8 @@ class Conv:
         from scipy import interpolate
         f = interpolate.lagrange(x, y)
         yp = f(xp)
-        print x, y
-        print xp, yp
+#         print x, y
+#         print xp, yp
             
 #         f = interpolate.interp1d(x, y)
         pct = []
@@ -244,6 +247,9 @@ class Div:
         self._Pd = self._pd()
         self._curve  = Bezier(self._Pd)
         
+    def __call__(self,t):
+         return self._curve(t)   
+        
     def _pd(self):
         m2, m3, nd, ld, type = self._m2, self._m3, self._nd,  self._ld, self._type
         if type == 1:
@@ -268,8 +274,8 @@ class Div:
         from scipy import interpolate
         f = interpolate.lagrange(x, y)
         yp = f(xp)
-        print x, y
-        print xp, yp
+#         print x, y
+#         print xp, yp
             
 #         f = interpolate.interp1d(x, y)
         pct = []
@@ -279,7 +285,23 @@ class Div:
         return pct
         
     def plot(self):
-        self._curve.bplot()   
+        self._curve.bplot()  
+    
+    def get_curve(self):
+        return self._curve    
+    
+    def get_cp(self):
+        return self._curve.get_p()
+    
+    def get_ncp(self):
+        return self._curve.get_ncp() 
+    
+    def get_x(self):
+        return self._curve.get_x()
+    
+    
+    def get_y(self):
+        return self._curve.get_y()
 
 
 
@@ -307,32 +329,91 @@ class Nozzle:
         self._div.plot()   
          
 
+class Bezier_Ar(Bezier):
+    def _sep(self):
+        P = self._P
+        x = P[0,:]
+        y = P[1,:]
+        return x, y        
 
 class BF_div:
     
-    def __init__(self, xy_p, c_err = 1.0, n_ord = 2.0):
+    def __init__(self, xy_p, ncp = 4):
         self._xy_p = xy_p
         self._t = self.curvi_abscissa(xy_p)
-        self._n_ord = n_ord
-
-    def __call__(self, P):
-        self._curve = Bezier(P)
-        return np.linalg.norm(self._err(), ord = self._n_ord)
+        self._ncp = ncp
+        self._curve = self._init_curve()
+    
+        
+    def __call__(self, A):
+        P = self.get_P(A)
+        self._fit = Bezier(P)
+        return np.linalg.norm(self._err(), ord = 2.0)
         
     def _err(self):
         curve, xy_p, t = self._curve, self._xy_p, self._t
         x = np.ones(len(t))
         y = np.ones(len(t))
         err = np.ones(len(t))
-        for i in xrange(t):
+        for i in xrange(len(t)):
             x[i], y[i] = curve(t[i])
-            err[i] = abs(xy_p[0,i]- x[i]) + abs(xy_p[1,i]- y[i])
             
-        err = abs(xy_p[0,:])
-        return 
+            err[i] = abs(xy_p[0,i]- x[i]) + abs(xy_p[1,i]- y[i]) #it may be vectorized
+            
+#         err = abs(xy_p[0,:])
+        return err
+            
+        
+    def _init_curve(self):
+        _ld, _m2, _m3 , _Aout = self._init_param()    
+        return  Div(ld =_ld, Aout = _Aout, m2 = _m2, m3 = _m3, nd = self._ncp)
+        
+    def _init_param(self):
+        xy_p = self._xy_p
+        l = len(xy_p[0,:])
+        ld = xy_p[0,l-1] - xy_p[0,0]
+        Aout = xy_p[1,l-1]
+        m2 = 0.0
+        m3 = (xy_p[1,l-1] - xy_p[1,l-2])/(xy_p[0,l-1] - xy_p[0,l-2])
+        return ld, m2, m3, Aout
 
+
+
+    def get_P(self, A):
+        x, y = self._curve.get_x(), self._curve.get_y()
+        n = self._curve.get_ncp()
+        for i in xrange(n-2):
+            y[i+1] = A[i]
+        P = []
+        for i in xrange(n):
+            P.append(Point(x[i], y[i]))
+        return P
+    
+    def get_A(self, P):
+        n = self._curve.get_ncp()
+        x, y = np.ones(len(P)), np.ones(len(P))
+        for i in xrange(n):
+            x[i], y[i] = P[i].split() 
+        A = np.ones(n-2)
+        for i in xrange(n-2):
+            A[i] = y[i+1]
+        return A    
+    
+    def get_bounds(self):
+        xy_p, n = self._xy_p, self._curve.get_ncp()
+        B  = np.ones((n-2 , 2), dtype = float)
+        B[:,0] *= xy_p[1,0]
+        B[:,1] *= xy_p[1,len(xy_p[0,:])-1]
+        return B
+    
+    def get_curve(self):
+        return self._curve
+    
+    
+        
+           
     @staticmethod
-    def curvi_abscissa( xy_p):
+    def curvi_abscissa(xy_p):
         dist = np.ones(len(xy_p[0,:])-1)
         t = np.ones(len(xy_p[0,:]))
         t[0] = 0.0
@@ -368,7 +449,20 @@ class BF_div:
 if __name__=='__main__':            
     filename = 'div.dat'           
     xy_p = pp.read_xy_p(filename) 
-#     plot(xy_p[0,:], xy_p[1,:] )  
+    fit = BF_div(xy_p, 8)
+    Po = fit.get_curve().get_cp()
+    Ao = fit.get_A(Po)
+    B =fit.get_bounds()
+#     print Po, Ao
+    print B
+    plot(xy_p[0,:], xy_p[1,:] )  
+    fit.get_curve().plot()
+    
+    A = scipy.optimize.fmin_slsqp(fit, Ao, bounds = B, iter = 1000)
+    print A
+    P = fit.get_P(A)
+    fit_curve = Bezier(P)
+    fit_curve.bplot()
 #     print BF_div.curvi_abscissa(xy_p) 
     """
         creare una Bezier che usa array e non punti ed il gioco e fatto
