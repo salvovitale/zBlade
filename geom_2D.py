@@ -121,16 +121,27 @@ class Lagrange:
 
 class Plot:
     
-    def __init__(self, curve, discr = 100):
+    def __init__(self, curve, ccp = 'bo', ccpoly = '-b', ccurve = '-r', lccp = 'Control Point', lccpoly = 'Control Polygon ', lccurve = 'Parametric Curve', xlabel = 'x', ylabel = 'y', discr = 100):
         self._curve = curve
         self._discr = discr
         self._x, self._y = self._generate()
+        self._xlabel = xlabel
+        self._ylabel = ylabel
+        self._ccp = ccp
+        self._ccpoly = ccpoly
+        self._ccurve = ccurve
+        self._lccp = lccp
+        self._lccpoly = lccpoly
+        self._lccurve = lccurve
         
+    def __call__(self):
+        plot(self._curve.get_x(), self._curve.get_y(), self._ccp)
+        plot(self._curve.get_x(), self._curve.get_y(), self._ccpoly)
+        plot(self._x, self._y, self._ccurve)
+        legend([self._lccp, self._lccpoly, self._lccurve])
+        xlabel(self._xlabel)
+        ylabel(self._ylabel)
         
-    def __call__(self):  
-        plot(self._curve.get_x(), self._curve.get_y())
-        plot(self._curve.get_x(), self._curve.get_y(), 'bo')
-        plot(self._x, self._y)
                     
     def _generate(self):
         t = np.linspace(0.0, 1.0, self._discr)
@@ -425,6 +436,10 @@ if __name__=='__main__':
     xy_p = pp.read_xy_p(filename) 
     fit = BF_div(xy_p, 8)
     Po = fit.get_cp()
+    init_guess = Bezier(Po)
+    pig = Plot(init_guess, ccp = 'go', ccpoly = '-g', ccurve = '-b', lccp = 'IG Control Point', lccpoly = 'IG Control Polygon ', lccurve = ' IG Parametric Curve')
+    pig() 
+    
 #     print Po
     Ao = fit.get_A(Po)
 #     print Ao
