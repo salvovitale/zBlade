@@ -453,7 +453,7 @@ if __name__=='__main__':
     print A
     P = fit.get_P(A)
     fit_curve = Bezier(P)
-#     fit_curve.plot()
+    fit_curve.plot()
 #     
 #     plot(xy_p[0,:], xy_p[1,:], '-g')
 
@@ -470,20 +470,20 @@ if __name__=='__main__':
 #     p3 = Point(1.0, 1.0)
 #     P= [p0, p1, p2, p3]
 #     
-    c = Nozzle()
+#     c = Nozzle()
 #     d = Nozzle(nc = 5, nd = 5)
 #     e = Nozzle(nc = 6, nd = 6)
-    c.plot()
-    axis([-3, 6, 0, 10 ])
+#     c.plot()
+#     axis([-3, 6, 0, 10 ])
 #     d.plot()
 #     e.plot()
     
     err = [0.765107371068, 0.381679555444, 0.371869452821, 0.332929094068, 0.307328456426]
     ncp = [4, 5, 6, 7, 8]
     
-#     axis([0, xy_p[0,len(xy_p[0,:])-1], 0,xy_p[0,len(xy_p[0,:])-1] ])
-    title('nozzle modeler')
-    savefig('nozzle_modeler.eps')
+    axis([0, xy_p[0,len(xy_p[0,:])-1], 0,xy_p[0,len(xy_p[0,:])-1] ])
+#     title('nozzle modeler')
+#     savefig('nozzle_modeler.eps')
 #     title('curve fitting')
 #     savefig('8pt.eps')
 #     plot(ncp, err, '-bo')
