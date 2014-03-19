@@ -419,8 +419,8 @@ class BF_div(Div):
     def get_bounds(self):
         xy_p, n = self._xy_p, self.get_ncp()
         B  = np.ones((n-2 , 2), dtype = float)
-        B[:,0] *= xy_p[1,0]
-        B[:,1] *= xy_p[1,len(xy_p[0,:])-1]
+        B[:,0] *= 0.5*xy_p[1,0]
+        B[:,1] *= 1.5*xy_p[1,len(xy_p[0,:])-1]
         return B
     
     
@@ -434,11 +434,11 @@ class BF_div(Div):
 if __name__=='__main__':            
     filename = 'div.dat'           
     xy_p = pp.read_xy_p(filename) 
-    fit = BF_div(xy_p, 8)
+    fit = BF_div(xy_p, 5)
     Po = fit.get_cp()
     init_guess = Bezier(Po)
-    pig = Plot(init_guess, ccp = 'go', ccpoly = '-g', ccurve = '-b', lccp = 'IG Control Point', lccpoly = 'IG Control Polygon ', lccurve = ' IG Parametric Curve')
-    pig() 
+#     pig = Plot(init_guess, ccp = 'ko', ccpoly = '-k', ccurve = '-y', lccp = 'IG Control Point', lccpoly = 'IG Control Polygon ', lccurve = ' IG Parametric Curve')
+#     pig() 
     
 #     print Po
     Ao = fit.get_A(Po)
@@ -446,14 +446,17 @@ if __name__=='__main__':
     B =fit.get_bounds()
 #     print Po, Ao
 #     print B
-#     plot(xy_p[0,:], xy_p[1,:] )  
+      
 #     fit.get_curve().bplot()
     
     A = scipy.optimize.fmin_slsqp(fit, Ao, bounds = B, iter = 1000)
     print A
     P = fit.get_P(A)
     fit_curve = Bezier(P)
-    fit_curve.plot()
+#     fit_curve.plot()
+#     
+#     plot(xy_p[0,:], xy_p[1,:], '-g')
+
 #     p = Plot(fit_curve)
 #     p()
 #     print BF_div.curvi_abscissa(xy_p) 
@@ -467,13 +470,30 @@ if __name__=='__main__':
 #     p3 = Point(1.0, 1.0)
 #     P= [p0, p1, p2, p3]
 #     
-#     c = Nozzle()
+    c = Nozzle()
 #     d = Nozzle(nc = 5, nd = 5)
 #     e = Nozzle(nc = 6, nd = 6)
-#     c.plot()
+    c.plot()
+    axis([-3, 6, 0, 10 ])
 #     d.plot()
 #     e.plot()
-    axis('equal')
+    
+    err = [0.765107371068, 0.381679555444, 0.371869452821, 0.332929094068, 0.307328456426]
+    ncp = [4, 5, 6, 7, 8]
+    
+#     axis([0, xy_p[0,len(xy_p[0,:])-1], 0,xy_p[0,len(xy_p[0,:])-1] ])
+    title('nozzle modeler')
+    savefig('nozzle_modeler.eps')
+#     title('curve fitting')
+#     savefig('8pt.eps')
+#     plot(ncp, err, '-bo')
+#     plot(ncp, err, '-r')
+#     xlabel('Number of equispaced Control Points')
+#     ylabel('Least square error')
+#     axis([3, 9, 0, 1 ])
+#     title('fitting error')
+#     savefig('fitting_error.eps')
+#     axis('equal')
 #     t = 0.5
     
 #     curve = np.array(c(ti) for ti in t)
