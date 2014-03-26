@@ -98,8 +98,8 @@ class Basis_bspline:
         Nurb book pag 70
         """
         p, U = self._p, self._U
-        self._find_span(u)
-        i = self.get_span_index()
+        self._i = self._find_span(u)
+        i = self._i
         N = np.ones(p+1)
         left = np.ones(p+1)
         right = np.ones(p+1)
@@ -139,8 +139,9 @@ class Basis_bspline:
                 high = mid
             else:
                 low = mid
-            mid = (low+high)/2    
-        self._i = mid
+            mid = (low+high)/2
+            print mid   
+        return mid
         
     def get_span_index(self):
         return self._i    
@@ -151,8 +152,8 @@ if __name__=='__main__':
     U = np.array([0, 0, 0, 1, 2, 3, 4, 4, 5, 5, 5])
     p = 3            
     prova = Basis_bspline(U,p)
-    print prova(3.0)
-    print sum(prova(3.0))        
+    print prova(4.0)
+#     print sum(prova(1.0))        
 # class Bspline(object):
 # 
 #     def __init__(self, P, u, k = None):
