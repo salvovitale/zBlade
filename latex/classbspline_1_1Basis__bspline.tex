@@ -1,0 +1,58 @@
+\hypertarget{classbspline_1_1Basis__bspline}{\section{bspline.\-Basis\-\_\-bspline \-Class \-Reference}
+\label{classbspline_1_1Basis__bspline}\index{bspline.\-Basis\-\_\-bspline@{bspline.\-Basis\-\_\-bspline}}
+}
+\subsection*{\-Public \-Member \-Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{classbspline_1_1Basis__bspline_a5c48961d7e42050826953b47cb1cbd23}{\-\_\-\-\_\-init\-\_\-\-\_\-}
+\item 
+def \hyperlink{classbspline_1_1Basis__bspline_af18ccc4d68f6fd0662090d82dfb474a6}{\-\_\-\-\_\-call\-\_\-\-\_\-}
+\item 
+\hypertarget{classbspline_1_1Basis__bspline_a0db6a458c694d840c16e3016ede52dda}{def {\bfseries get\-\_\-span\-\_\-index}}\label{classbspline_1_1Basis__bspline_a0db6a458c694d840c16e3016ede52dda}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{\-Constructor \& \-Destructor \-Documentation}
+\hypertarget{classbspline_1_1Basis__bspline_a5c48961d7e42050826953b47cb1cbd23}{\index{bspline\-::\-Basis\-\_\-bspline@{bspline\-::\-Basis\-\_\-bspline}!\-\_\-\-\_\-init\-\_\-\-\_\-@{\-\_\-\-\_\-init\-\_\-\-\_\-}}
+\index{\-\_\-\-\_\-init\-\_\-\-\_\-@{\-\_\-\-\_\-init\-\_\-\-\_\-}!bspline::Basis_bspline@{bspline\-::\-Basis\-\_\-bspline}}
+\subsubsection[{\-\_\-\-\_\-init\-\_\-\-\_\-}]{\setlength{\rightskip}{0pt plus 5cm}def {\bf bspline.\-Basis\-\_\-bspline.\-\_\-\-\_\-init\-\_\-\-\_\-} (
+\begin{DoxyParamCaption}
+\item[{}]{self, }
+\item[{}]{\-U, }
+\item[{}]{p = {\ttfamily 0}}
+\end{DoxyParamCaption}
+)}}\label{classbspline_1_1Basis__bspline_a5c48961d7e42050826953b47cb1cbd23}
+\begin{DoxyVerb}
+construct Bspline basis function object
+
+p == degree of the curve 
+U == nonperiodic Knot vector  
+
+identities:
+m = len(U) - 1
+n = m - p - 1
+
+m+1 == length of the knot vector
+n+1 == number basis function
+\end{DoxyVerb}
+ 
+
+\subsection{\-Member \-Function \-Documentation}
+\hypertarget{classbspline_1_1Basis__bspline_af18ccc4d68f6fd0662090d82dfb474a6}{\index{bspline\-::\-Basis\-\_\-bspline@{bspline\-::\-Basis\-\_\-bspline}!\-\_\-\-\_\-call\-\_\-\-\_\-@{\-\_\-\-\_\-call\-\_\-\-\_\-}}
+\index{\-\_\-\-\_\-call\-\_\-\-\_\-@{\-\_\-\-\_\-call\-\_\-\-\_\-}!bspline::Basis_bspline@{bspline\-::\-Basis\-\_\-bspline}}
+\subsubsection[{\-\_\-\-\_\-call\-\_\-\-\_\-}]{\setlength{\rightskip}{0pt plus 5cm}def {\bf bspline.\-Basis\-\_\-bspline.\-\_\-\-\_\-call\-\_\-\-\_\-} (
+\begin{DoxyParamCaption}
+\item[{}]{self, }
+\item[{}]{u}
+\end{DoxyParamCaption}
+)}}\label{classbspline_1_1Basis__bspline_af18ccc4d68f6fd0662090d82dfb474a6}
+\begin{DoxyVerb}
+this method compute the non vanishing basis function
+Nurb book pag 70
+\end{DoxyVerb}
+ 
+
+\-The documentation for this class was generated from the following file\-:\begin{DoxyCompactItemize}
+\item 
+bspline.\-py\end{DoxyCompactItemize}

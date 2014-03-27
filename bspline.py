@@ -1,4 +1,5 @@
 import sys
+from bezier import Bezier
 utility_folder = '../utility/'
 sys.path.insert(0, utility_folder)
 from matplotlib.pylab import *
@@ -6,76 +7,22 @@ from math import factorial
 import util as ut
 import preproc_prof as pp
 import scipy.optimize
+from point import Point
+from plot import Plot
 
 
 
 
 
-class Point:
-    def __init__(self, x = 0.0, y = 0.0, z = 0.0 , w = 1.0 ):
-        self.x = x
-        self.y = y
-        self.z = z
-        self.w = w
-        
-    def distance(self, other):
-        return sqrt((other.x-self.x)*(other.x-self.x)+(other.y-self.y)*(other.y-self.y)+(other.z-self.z)*(other.z-self.z))
 
-    def length(self):
-        return self.distance(Point(0.0, 0.0, 0.0))
-
-    def __sub__(self, other):
-        return Point(self.x-other.x, self.y-other.y, self.z-other.z)
-
-    def __add__(self, other):
-        return Point(self.x+other.x, self.y+other.y, self.z + other.z)
-
-    def __mul__(self, c):
-        return Point(c*self.x, c*self.y, c*self.z)
-
-    def __eq__(self, other):
-        return self.x == other.x and self.y == other.y and self.z == other.z
-
-    def __ne__(self, other):
-        return not (self == other)
-    
-    def towards(self, target, t):
-        return Point((1.0-t)*self.x+t*target.x, (1.0-t)*self.y+t*target.y, (1.0-t)*self.z+t*target.z)
-    
-    def halfway(self, target):
-        return Point((self.x+target.x).div2(), (self.y+target.y).div2(), (self.z+target.z).div2())
-
-    def compare_lex(self, other):
-        if self.x < other.x:
-            return -1
-        if self.x > other.x:
-            return 1
-        if self.y < other.y:
-            return -1
-        if self.y > other.y:
-            return 1
-        return 0
-
-    def less_lex(self, p):
-        return self.compare_lex(p) < 0
-
-    def less_eq_lex(self, p):
-        return self.compare_lex(p) <= 0
-    
-    def __repr__(self):
-        return "Point(%s, %s)" % (self.x, self.y)      
-    
-    def split(self):
-        return self.x, self.y, self.z, self.w
     
     
     
 class Basis_bspline:
         
-    def __init__(self, U, p = 0):
+    def __init__(self, U, p = 1):
         """
         construct Bspline basis function object
-        uses Cox-DeBoor
 
         p == degree of the curve 
         U == nonperiodic Knot vector  
@@ -116,7 +63,7 @@ class Basis_bspline:
                 
         
         
-        return u 
+        
      
     def _find_span(self, u):
         """
@@ -128,7 +75,6 @@ class Basis_bspline:
         
         """
         n, p, U = self._n, self._p, self._U
-        
         if u == U[n+1]:
             return n
         low = p
@@ -140,7 +86,7 @@ class Basis_bspline:
             else:
                 low = mid
             mid = (low+high)/2
-            print mid   
+             
         return mid
         
     def get_span_index(self):
@@ -148,12 +94,139 @@ class Basis_bspline:
 
 
 
+
+class Bspline:
+    """
+    This class implement a rational Bspline with a nonperiodic uniform
+    knot vectors (definition at pag 66-67 of Nurbs book). 
+    """
+    def __init__(self, P, p = 2, a = 0, b = 1):
+        """
+        Constructor 
+        input:
+        p == degree of the curve 
+        P == list of control point   
+        a == lower bound of the interval for the knot vector domain
+        b == upper bound of the interval for the knot vector domain
+        
+        
+        identities:
+        n+1 = len(P) number of cont. Point namely number of basis function
+        m+1 = len(U) length of the knot vector
+        m = n + p + 1
+        """
+        self._P = P
+        self._p = p
+        self._a = a
+        self._b = b
+        self._n = len(P) - 1
+        self._m = self._n + p + 1
+        self._U = self._knotsvector()
+        self._X, self._Y, self._Z, self._W = self._sep()
+        
+    def __call__(self, u):
+        """
+        this method evaluats the bspline rational function at the value of the parameter u 
+        see pag 82 of Nurbs book
+        
+        """
+        n, p, U, X, Y, Z, W = self._n, self._p, self._U, self._X, self._Y, self._Z, self._W  
+        N = Basis_bspline(U = U, p = p)
+        N(u)
+        span = N.get_span_index()
+        x = sum(N(u)*X[span - p : span+1])
+        y = sum(N(u)*Y[span - p : span+1])
+        z = sum(N(u)*Z[span - p : span+1])
+        w = sum(N(u)*W[span - p : span+1])
+        return x/w, y/w, z/w
+    
+    def _knotsvector(self):
+        
+        """
+        construct a uniform nonperiodic knots vectors
+        {a_0, a_1,..., a_p , u_p+1,..., u_m-p-1, b_m-p, ... ,b_m-1, b_m}
+        
+        d = (b-a)/(m-2p)
+        u_p+1 = a + d
+        u_p+2 = a + 2*d
+        ...
+        u_m-p-1 = a + j*d 
+        """
+        p, a, b = self._p, self._a, self._b
+        U1 = np.ones(p+1)
+        U1 *= a
+        U2 = self._internal_knots() 
+        U3 = np.ones(p+1)
+        U3 *= b
+        return np.concatenate((U1, np.concatenate((U2, U3))))
+                      
+
+    def _internal_knots(self):
+        """
+        calculate the values of the uniform internal knots
+          
+        """
+        p, m, a, b = self._p, self._m, self._a, self._b
+        d = (b-a)/float(m-2*p)
+        int_knot = np.ones((m-2*p-1))
+        for j in xrange(m-2*p-1):
+            int_knot[j] = a + (j+1)*d
+        return int_knot
+    
+    def _sep(self):
+        n, P = self._n, self._P
+        x = np.ones(n+1)
+        y = np.ones(n+1)
+        z = np.ones(n+1)
+        w = np.ones(n+1)
+        for i in xrange(n+1):
+            x[i], y[i], z[i], w[i] = P[i].split()
+             
+        return x, y, z, w
+    
+    def get_U(self):
+        return self._U
+    
+    def get_cp(self):
+        return self._P
+    
+    def get_ncp(self):
+        return self._n + 1
+        
+    def get_x(self):
+        return self._X
+    
+    
+    def get_y(self):
+        return self._Y
+    
+    def get_z(self):
+        return self._Z
+    
+    
+    def get_w(self):
+        return self._W
+    
+    def plot(self):
+        a = Plot(self)
+        a()
+            
 if __name__=='__main__':
-    U = np.array([0, 0, 0, 1, 2, 3, 4, 4, 5, 5, 5])
-    p = 3            
+    U = np.array([0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0, 4.0, 5.0, 5.0, 5.0])
+    p = 2            
     prova = Basis_bspline(U,p)
+    P = [Point(0.0, 0.0), Point(0.5, 1.0), Point(1.0, 0.0), Point(1.5, 2.0), Point(3.5, -1.0), Point(4.5, 0.0) ]
     print prova(4.0)
-#     print sum(prova(1.0))        
+    print sum(prova(4.0))
+    prova2 = Bspline(P)
+    print prova2.get_U() 
+    print prova2.get_U()[0:11]
+    prova2.plot() 
+    prova3 = Bezier(P)
+    prova3.plot()
+     
+    show()      
+    
 # class Bspline(object):
 # 
 #     def __init__(self, P, u, k = None):

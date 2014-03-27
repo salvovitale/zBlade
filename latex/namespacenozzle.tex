@@ -1,0 +1,60 @@
+\hypertarget{namespacenozzle}{\section{nozzle \-Namespace \-Reference}
+\label{namespacenozzle}\index{nozzle@{nozzle}}
+}
+\subsection*{\-Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \hyperlink{classnozzle_1_1Conv}{\-Conv}
+\begin{DoxyCompactList}\small\item\em \-N\-O\-O\-Z\-L\-E \-G\-E\-O. \end{DoxyCompactList}\item 
+class \hyperlink{classnozzle_1_1Div}{\-Div}
+\item 
+class \hyperlink{classnozzle_1_1Nozzle}{\-Nozzle}
+\item 
+class \hyperlink{classnozzle_1_1BF__div}{\-B\-F\-\_\-div}
+\end{DoxyCompactItemize}
+\subsection*{\-Variables}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{namespacenozzle_aaf7e494155ffd966b135ab1d9354f2b2}{string {\bfseries filename} = 'div.\-dat'}\label{namespacenozzle_aaf7e494155ffd966b135ab1d9354f2b2}
+
+\item 
+\hypertarget{namespacenozzle_a3db3842eb192143bc6255185f4eceedf}{tuple {\bfseries xy\-\_\-p} = pp.\-read\-\_\-xy\-\_\-p(filename)}\label{namespacenozzle_a3db3842eb192143bc6255185f4eceedf}
+
+\item 
+\hypertarget{namespacenozzle_a670c3cbec06a029072b73e7483eca284}{tuple {\bfseries fit} = \hyperlink{classnozzle_1_1BF__div}{\-B\-F\-\_\-div}(xy\-\_\-p, 5)}\label{namespacenozzle_a670c3cbec06a029072b73e7483eca284}
+
+\item 
+\hypertarget{namespacenozzle_a61477428c400085b4ff609d5385c8bee}{tuple {\bfseries \-Po} = fit.\-get\-\_\-cp()}\label{namespacenozzle_a61477428c400085b4ff609d5385c8bee}
+
+\item 
+\hypertarget{namespacenozzle_ae192cb9cc38b48c742ef3ed17add92f7}{tuple {\bfseries init\-\_\-guess} = \hyperlink{classbezier_1_1Bezier}{\-Bezier}(\-Po)}\label{namespacenozzle_ae192cb9cc38b48c742ef3ed17add92f7}
+
+\item 
+\hypertarget{namespacenozzle_afde5f5f5fca5b19f5bd1dfcfa36a3247}{tuple {\bfseries \-Ao} = fit.\-get\-\_\-\-A(\-Po)}\label{namespacenozzle_afde5f5f5fca5b19f5bd1dfcfa36a3247}
+
+\item 
+\hypertarget{namespacenozzle_a98f0fccf88dc387e14739aaad09c87cf}{tuple {\bfseries \-B} = fit.\-get\-\_\-bounds()}\label{namespacenozzle_a98f0fccf88dc387e14739aaad09c87cf}
+
+\item 
+\hypertarget{namespacenozzle_a0ccb978a357e0c50ba8877e672b9d1b9}{tuple {\bfseries \-A} = scipy.\-optimize.\-fmin\-\_\-slsqp(fit, \-Ao, bounds = \-B, iter = 1000)}\label{namespacenozzle_a0ccb978a357e0c50ba8877e672b9d1b9}
+
+\item 
+\hypertarget{namespacenozzle_a16247691e5be4b935e309b6d6062bbd2}{tuple {\bfseries \-P} = fit.\-get\-\_\-\-P(\-A)}\label{namespacenozzle_a16247691e5be4b935e309b6d6062bbd2}
+
+\item 
+\hypertarget{namespacenozzle_a5bc67755f1e5646f0b68c3ba88303578}{tuple {\bfseries fit\-\_\-curve} = \hyperlink{classbezier_1_1Bezier}{\-Bezier}(\-P)}\label{namespacenozzle_a5bc67755f1e5646f0b68c3ba88303578}
+
+\item 
+\hypertarget{namespacenozzle_a6baec50da90b88388370c11b7a4a1d12}{list {\bfseries err} = \mbox{[}0.\-765107371068, 0.\-381679555444, 0.\-371869452821, 0.\-332929094068, 0.\-307328456426\mbox{]}}\label{namespacenozzle_a6baec50da90b88388370c11b7a4a1d12}
+
+\item 
+\hypertarget{namespacenozzle_a12153924299e0f7ddc24c73c167da400}{list {\bfseries ncp} = \mbox{[}4, 5, 6, 7, 8\mbox{]}}\label{namespacenozzle_a12153924299e0f7ddc24c73c167da400}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{\-Detailed \-Description}
+\begin{DoxyVerb}@package zBlade
+In this module it is implemented the a Geometrical modeller for a convergent-divergent Nozzle    
+\end{DoxyVerb}
+ 

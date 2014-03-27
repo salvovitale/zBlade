@@ -1,0 +1,51 @@
+\hypertarget{classbspline_1_1Bspline}{\section{bspline.\-Bspline \-Class \-Reference}
+\label{classbspline_1_1Bspline}\index{bspline.\-Bspline@{bspline.\-Bspline}}
+}
+\subsection*{\-Public \-Member \-Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{classbspline_1_1Bspline_a6ff60f8423946ec65f8e74ea4790c177}{\-\_\-\-\_\-init\-\_\-\-\_\-}
+\item 
+\hypertarget{classbspline_1_1Bspline_a791969b1414f2f8e1c03de6af94ad2a3}{def {\bfseries get\-\_\-\-U}}\label{classbspline_1_1Bspline_a791969b1414f2f8e1c03de6af94ad2a3}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{\-Detailed \-Description}
+\begin{DoxyVerb}
+This class implement a rational Bspline with a nonperiodic uniform
+knot vectors (definition at pag 66-67 of Nurbs book). 
+\end{DoxyVerb}
+ 
+
+\subsection{\-Constructor \& \-Destructor \-Documentation}
+\hypertarget{classbspline_1_1Bspline_a6ff60f8423946ec65f8e74ea4790c177}{\index{bspline\-::\-Bspline@{bspline\-::\-Bspline}!\-\_\-\-\_\-init\-\_\-\-\_\-@{\-\_\-\-\_\-init\-\_\-\-\_\-}}
+\index{\-\_\-\-\_\-init\-\_\-\-\_\-@{\-\_\-\-\_\-init\-\_\-\-\_\-}!bspline::Bspline@{bspline\-::\-Bspline}}
+\subsubsection[{\-\_\-\-\_\-init\-\_\-\-\_\-}]{\setlength{\rightskip}{0pt plus 5cm}def {\bf bspline.\-Bspline.\-\_\-\-\_\-init\-\_\-\-\_\-} (
+\begin{DoxyParamCaption}
+\item[{}]{self, }
+\item[{}]{\-P, }
+\item[{}]{p = {\ttfamily 2}, }
+\item[{}]{a = {\ttfamily 0}, }
+\item[{}]{b = {\ttfamily 1}}
+\end{DoxyParamCaption}
+)}}\label{classbspline_1_1Bspline_a6ff60f8423946ec65f8e74ea4790c177}
+\begin{DoxyVerb}
+Constructor 
+input:
+p == degree of the curve 
+P == list of control point   
+a == lower bound of the interval for the knot vector domain
+b == upper bound of the interval for the knot vector domain
+
+
+identities:
+n+1 = len(P) number of cont. Point namely number of basis function
+m+1 = len(U) length of the knot vector
+m = n + p + 1
+\end{DoxyVerb}
+ 
+
+\-The documentation for this class was generated from the following file\-:\begin{DoxyCompactItemize}
+\item 
+bspline.\-py\end{DoxyCompactItemize}
