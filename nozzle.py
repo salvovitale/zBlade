@@ -9,6 +9,7 @@ import preproc_prof as pp
 import scipy.optimize
 from point import Point
 from bezier import Bezier, curvi_abscissa
+from bspline import Bspline
 
 
 
@@ -19,37 +20,35 @@ from bezier import Bezier, curvi_abscissa
 ##################################################  NOOZLE GEO. MODELER ###############################################################        
     
          
-class Conv(Bezier):
-    def __init__(self, lc = 2.0, Ain = 2.0, m1 = -0.2, m2 = 0.0, nc = 4, type = 1):
+class Conv(Bspline):
+    def __init__(self, lc = 2.0, Ain = 2.0, min = -0.2, nc = 5, type = 1, p = 2):
         self._lc = lc
         self._Ain = Ain
-        self._m1 = m1
-        self._m2 = m2
+        self._min = min
         self._nc = nc
         self._type = type
         self._Pc = self._pc()
-        Bezier.__init__(self, self._Pc)
+        Bspline.__init__(self, self._Pc, p)
         
     def _pc(self):
-        m1, m2, nc, lc, type = self._m1, self._m2, self._nc, self._lc, self._type
+        min, nc, lc, type = self._min, self._nc, self._lc, self._type
         """ 
             equispaced control point along x
         
         """
         if type == 1:
             dx = lc/(nc-1)
-            dy1 = dx*m1
+            dy1 = dx*min
             p01 = Point(-lc, self._Ain)
             p11 = p01 + Point(dx, dy1, 0.0, 0.0)
             pn1 = Point(0.0, 1.0)
-            dy2 = dx*m2
-            pn_11 = pn1 - Point(dx,dy2, 0.0, 0.0)
+            pn_11 = pn1 - Point(dx, 0.0, 0.0, 0.0)
             pint = [p01, p11, pn_11, pn1]
             n = len(pint)
             x = np.ones(n)
             y = np.ones(n)
             for i in xrange(n):
-                x[i], y[i] = pint[i].split()
+                x[i], y[i], nul1, nul2 = pint[i].split()
             xp = np.ones(nc)
             for i in xrange(nc):
                 xp[i] = -lc +  i*dx     
@@ -74,26 +73,24 @@ class Conv(Bezier):
 
 
 
-class Div(Bezier):
+class Div(Bspline):
     
-    def __init__(self, ld = 5.0, Aout = 3.0, m2 = 0.0, m3 = 0.1, nd = 4, type = 1):
+    def __init__(self, ld = 5.0, Aout = 3.0, mout = 0.1, nd = 5, type = 1, p = 2):
         self._ld = ld
         self._Aout = Aout
-        self._m2 = m2
-        self._m3 = m3
+        self._mout = mout 
         self._nd = nd
         self._type = type
-        Bezier.__init__(self, self._pd())
+        Bspline.__init__(self, self._pd(), p)
       
     def _pd(self):
-        m2, m3, nd, ld, type = self._m2, self._m3, self._nd,  self._ld, self._type
+        mout, nd, ld, type = self._mout, self._nd,  self._ld, self._type
         if type == 1:
             dx = ld/(nd-1)
             p02 = Point(0, 1.0)
-            dy1 = m2*dx
-            p12 = p02 + Point(dx, dy1, 0.0, 0.0)
+            p12 = p02 + Point(dx, 0.0, 0.0, 0.0)
             pn2 = Point( ld, self._Aout)
-            dy2 = m3*dx
+            dy2 = mout*dx
             pn_12 = pn2 - Point(dx, dy2, 0.0, 0.0)
             pint =  [p02, p12, pn_12, pn2]
             n = len(pint)
@@ -125,7 +122,7 @@ class Div(Bezier):
      
 class Nozzle:
     
-    def __init__(self, lc = 2.0, ld = 5.0, Ain = 2.0, Aout = 3.0, m1 = -0.2, m2 = 0.0, m3 = 0.1, nc = 4, nd = 4, type = 1):  
+    def __init__(self, lc = 2.0, ld = 5.0, Ain = 2.0, Aout = 3.0, min = -0.2,  mout = 0.1, nc = 6, nd = 6, type = 1, p = 2):  
         """
         construct 2D - nozzle with 2 Bezier curve
 
@@ -137,8 +134,8 @@ class Nozzle:
         all these quantities are adimensinal over Ath
         
         """      
-        self._conv = Conv(lc, Ain, m1, m2, nc, type)
-        self._div = Div(ld, Aout, m2, m3, nd, type)
+        self._conv = Conv(lc, Ain, min, nc, type, p)
+        self._div = Div(ld, Aout, mout, nd, type, p)
 
     def plot(self):
         self._conv.plot()
@@ -147,30 +144,31 @@ class Nozzle:
 
 class BF_div(Div):
     
-    def __init__(self, xy_p, ncp = 4):
+    def __init__(self, xy_p, ncp = 4, p = 3):
         self._xy_p = xy_p
         self._s = curvi_abscissa(xy_p)
+        self._p = p
         self._init_curve(ncp)
+        
         
     
     def _init_curve(self, ncp):
-        _ld, _m2, _m3 , _Aout = self._init_param()    
-        Div.__init__(self, ld =_ld, Aout = _Aout, m2 = _m2, m3 = _m3, nd = ncp)
+        _ld, _mout , _Aout = self._init_param()    
+        Div.__init__(self, ld =_ld, Aout = _Aout, mout = _mout, nd = ncp, p = self._p)
         
     def _init_param(self):
         xy_p = self._xy_p
         l = len(xy_p[0,:])
         ld = xy_p[0,l-1] - xy_p[0,0]
         Aout = xy_p[1,l-1]
-        m2 = 0.0
-        m3 = (xy_p[1,l-1] - xy_p[1,l-2])/(xy_p[0,l-1] - xy_p[0,l-2])
-        return ld, m2, m3, Aout    
+        mout = (xy_p[1,l-1] - xy_p[1,l-2])/(xy_p[0,l-1] - xy_p[0,l-2])
+        return ld, mout, Aout    
 
     
     def __call__(self, A):
         P = self.get_P(A)
-        self._fit = Bezier(P)
-        return np.linalg.norm(self._err(), ord = 2.0)   
+        self._fit = Bspline(P)
+        return np.linalg.norm(self._err(), ord = 3.0)   
         
     
         
@@ -180,7 +178,7 @@ class BF_div(Div):
         y = np.ones(len(s))
         err = np.ones(len(s))
         for i in xrange(len(s)):
-            x[i], y[i], nul1  = Bezier.__call__(self, s[i])
+            x[i], y[i], nul1  = Bspline.__call__(self, s[i])
             
             err[i] = abs(xy_p[0,i]- x[i]) + abs(xy_p[1,i]- y[i]) #it may be vectorized
             
@@ -219,7 +217,7 @@ class BF_div(Div):
         xy_p, n = self._xy_p, self.get_ncp()
         B  = np.ones((2*n-2 , 2), dtype = float)
         B[:,0] *= 0.1*xy_p[1,0]
-        B[:,1] *= 2.0*xy_p[1,len(xy_p[0,:])-1]
+        B[:,1] *= 1.01*xy_p[1,len(xy_p[0,:])-1]
         return B
     
     
@@ -233,28 +231,32 @@ class BF_div(Div):
 if __name__=='__main__':            
     filename = 'div.dat'           
     xy_p = pp.read_xy_p(filename) 
-    fit = BF_div(xy_p, 5)
+    p = 7
+    fit = BF_div(xy_p, ncp = 8 , p = p)
     Po = fit.get_cp()
-    init_guess = Bezier(Po)
+#     init_guess = Bspline(Po)
 #     pig = Plot(init_guess, ccp = 'ko', ccpoly = '-k', ccurve = '-y', lccp = 'IG Control Point', lccpoly = 'IG Control Polygon ', lccurve = ' IG Parametric Curve')
 #     pig() 
-    
+     
 #     print Po
     Ao = fit.get_A(Po)
 #     print Ao
     B =fit.get_bounds()
 #     print Po, Ao
 #     print B
-      
+       
 #     fit.get_curve().bplot()
-    
+     
     A = scipy.optimize.fmin_slsqp(fit, Ao, bounds = B, iter = 1000)
     print A
     P = fit.get_P(A)
-    fit_curve = Bezier(P)
+    print P
+    fit_curve = Bspline(P, p)
+    print fit_curve.get_U()
     fit_curve.plot()
 #     
     plot(xy_p[0,:], xy_p[1,:], '-g')
+
 
 #     p = Plot(fit_curve)
 #     p()
@@ -280,7 +282,7 @@ if __name__=='__main__':
     err = [0.765107371068, 0.381679555444, 0.371869452821, 0.332929094068, 0.307328456426]
     ncp = [4, 5, 6, 7, 8]
     
-    axis([0, xy_p[0,len(xy_p[0,:])-1], 0,xy_p[0,len(xy_p[0,:])-1] ])
+#     axis([0, xy_p[0,len(xy_p[0,:])-1], 0,xy_p[0,len(xy_p[0,:])-1] ])
 #     title('nozzle modeler')
 #     savefig('nozzle_modeler.eps')
 #     title('curve fitting')

@@ -66,7 +66,7 @@ class Point:
         return self.compare_lex(p) <= 0
     
     def __repr__(self):
-        return "Point(%s, %s)" % (self.x, self.y)      
+        return "Point(%s, %s, %s, %s)" % (self.x, self.y, self.z, self.w)      
     
     def split(self):
         return self.x, self.y, self.z, self.w

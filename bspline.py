@@ -1,5 +1,5 @@
 import sys
-from bezier import Bezier
+
 utility_folder = '../utility/'
 sys.path.insert(0, utility_folder)
 from matplotlib.pylab import *
@@ -9,6 +9,7 @@ import preproc_prof as pp
 import scipy.optimize
 from point import Point
 from plot import Plot
+from bezier import Bezier
 
 
 
@@ -134,9 +135,9 @@ class Bspline:
         N = Basis_bspline(U = U, p = p)
         N(u)
         span = N.get_span_index()
-        x = sum(N(u)*X[span - p : span+1])
-        y = sum(N(u)*Y[span - p : span+1])
-        z = sum(N(u)*Z[span - p : span+1])
+        x = sum(N(u)*X[span - p : span+1]*W[span - p : span+1])
+        y = sum(N(u)*Y[span - p : span+1]*W[span - p : span+1])
+        z = sum(N(u)*Z[span - p : span+1]*W[span - p : span+1])
         w = sum(N(u)*W[span - p : span+1])
         return x/w, y/w, z/w
     
@@ -184,8 +185,21 @@ class Bspline:
              
         return x, y, z, w
     
+    def get_int_U(self):
+        p , m = self._p, self._m
+        return self._U[p: m-p+1]
+    
     def get_U(self):
         return self._U
+    
+    def get_n(self):
+        return self._n
+    
+    def get_p(self):
+        return self._p
+    
+    def get_m(self):
+        return self._m
     
     def get_cp(self):
         return self._P
@@ -215,16 +229,17 @@ if __name__=='__main__':
     U = np.array([0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0, 4.0, 5.0, 5.0, 5.0])
     p = 2            
     prova = Basis_bspline(U,p)
-    P = [Point(0.0, 0.0), Point(0.5, 1.0), Point(1.0, 0.0), Point(1.5, 2.0), Point(3.5, -1.0), Point(4.5, 0.0) ]
+#     P = [Point(0.0, 0.0), Point(0.5, 1.0), Point(1.0, 0.0), Point(1.5, 2.0), Point(3.5, -1.0), Point(4.5, 0.0) ]
+    P = [Point(0.0, 1.0), Point(2.79761904762, 1.59530618983), Point(5.59523809524, 2.2824786079), Point(8.39285714286, 2.50866465597), Point(11.1904761905, 2.86509988565)]
     print prova(4.0)
     print sum(prova(4.0))
-    prova2 = Bspline(P)
-    print prova2.get_U() 
-    print prova2.get_U()[0:11]
-    prova2.plot() 
+    prova2 = Bspline(P) 
+    print prova2.__class__.__name__   
+    prova2.plot()
+    print prova2.get_int_U() 
     prova3 = Bezier(P)
     prova3.plot()
-     
+    axis('equal') 
     show()      
     
 # class Bspline(object):
