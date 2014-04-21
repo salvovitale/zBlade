@@ -3,8 +3,8 @@ In this module it is implemented the class Point which represent
 the cartesian point    
 """
 
-from math import sqrt
-
+from math import sqrt, pi
+from matplotlib.pylab import plot
 
 
 class Point:
@@ -20,6 +20,8 @@ class Point:
         self.y = y
         self.z = z
         self.w = w
+    def __call__(self):
+        return self.x, self.y, self.z     
         
     def distance(self, other):
         return sqrt((other.x-self.x)*(other.x-self.x)+(other.y-self.y)*(other.y-self.y)+(other.z-self.z)*(other.z-self.z))
@@ -70,3 +72,33 @@ class Point:
     
     def split(self):
         return self.x, self.y, self.z, self.w
+
+
+
+class Norm:
+    
+    def __init__(self, x = 0.0, y = 0.0, z = 0.0):
+        self.x = x/sqrt(x**2+y**2+z**2)
+        self.y = y/sqrt(x**2+y**2+z**2)
+        self.z = z/sqrt(x**2+y**2+z**2)
+    
+    def __call__(self):
+        return self.x, self.y, self.z#, [0.0, self.z]
+    
+    def plot2D(self):
+        plot([0.0, self.x], [0.0, self.y])
+            
+        
+class Angle:
+    """
+    to convert angle from degree to radiant
+    """
+    def __init__(self, angle):
+        self._angle = angle
+    def __call__(self):
+        return pi*self._angle/180.00 
+    def getAngle(self):
+        return self._angle          
+    
+             
+    
