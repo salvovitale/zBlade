@@ -363,15 +363,26 @@ class DerBasisBspline:
             
             
 if __name__=='__main__':
-    U = np.array([0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0, 4.0, 5.0, 5.0, 5.0])
-    p = 2         
-    u = 2.5
-    prova = DerBasisBspline(U)
-    print prova(2.5)[0][2]
-    print prova(2.5)[1][2]
-    print prova(2.5)[2][2]   
+#     U = np.array([0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0, 4.0, 5.0, 5.0, 5.0])
+#     p = 2         
+#     u = 2.5
+#     prova = DerBasisBspline(U)
+#     print prova(2.5)[0][2]
+#     print prova(2.5)[1][2]
+#     print prova(2.5)[2][2]   
 #     prova = Basis_bspline(U,p)
-#     P = [Point(0.0, 0.0), Point(0.5, 1.0), Point(1.0, 0.0), Point(1.5, 2.0), Point(3.5, -1.0), Point(4.5, 0.0) ]
+
+
+
+
+    P = [Point(0.0, 0.0), Point(0.5, 1.0), Point(1.0, 0.0), Point(1.5, 2.0), Point(3.5, -1.0), Point(4.5, 0.0) ]
+    p = 5
+    prova1 = Bspline(P, p, kth = 3)
+    prova2 = Bspline(P, p, kth = 2)
+    prova1.plot()
+    prova2.plot()
+    axis('equal') 
+    show()  
 # #     P = [Point(0.0, 1.0), Point(2.79761904762, 1.59530618983), Point(5.59523809524, 2.2824786079), Point(8.39285714286, 2.50866465597), Point(11.1904761905, 2.86509988565)]
 # #     print prova(4.0)
 # #     print sum(prova(4.0))
