@@ -51,14 +51,23 @@ class Udist(object):
         d = (b-a)/(nintP+1)
         u = np.ones(nintP+2)
         for i in xrange(nintP+2):
-            u.append(a + d*i)
+            u[i] = a + d*i
         self._u = u
     
+
+class Ddist:
     
+    def __init__(self, ):
+        P = [Point]    
 
 class SuctionCP:
     
-    def __init__(self, uDist):
+    def __init__(self, uDist, camb):
+        self._camb = camb
+        self._uDist = uDist
+        
+        
+        
              
                         
         
