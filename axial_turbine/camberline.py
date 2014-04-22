@@ -12,6 +12,7 @@ from matplotlib.pylab import *
 from point import Point, Angle, Norm
 from bspline import *
 from line import Line
+from bspline import Bspline
 from math import sqrt, pi, cos, sin, tan
 
   
@@ -84,7 +85,21 @@ class CamberlineCP:
                
             
         
-
+class Camberline:
+    
+    def __init__(self, cambCP, p = 2):
+        self._cambCP = cambCP
+        self._p = p
+        self._camb = Bspline(cambCP(), p = p ) 
+        self._dercamb = Bspline(cambCP(), p = p, kth = 1)
+    
+    def getCamb(self):
+        return self._camb
+    
+    def getDerCamb(self):
+        return self._dercamb
+        
+        
 
 
 # class Camberline(object):

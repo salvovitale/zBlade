@@ -87,6 +87,8 @@ class Norm:
     
     def plot2D(self):
         plot([0.0, self.x], [0.0, self.y])
+        
+       
             
         
 class Angle:
@@ -101,4 +103,5 @@ class Angle:
         return self._angle          
     
              
-    
+def normal2D(v1):
+    return Norm(-v1.y, v1.x)

@@ -101,7 +101,7 @@ class Bspline:
     This class implement a rational Bspline with a nonperiodic uniform
     knot vectors (definition at pag 66-67 of Nurbs book). 
     """
-    def __init__(self, P, p = 2, a = 0, b = 1):
+    def __init__(self, P, p = 2, a = 0, b = 1, kth = 0):
         """
         Constructor 
         input:
@@ -122,6 +122,7 @@ class Bspline:
         self._b = b
         self._n = len(P) - 1
         self._m = self._n + p + 1
+        self._kth = kth
         self._U = self._knotsvector()
         self._X, self._Y, self._Z, self._W = self._sep()
         
@@ -131,14 +132,14 @@ class Bspline:
         see pag 82 of Nurbs book
         
         """
-        n, p, U, X, Y, Z, W = self._n, self._p, self._U, self._X, self._Y, self._Z, self._W  
-        N = Basis_bspline(U = U, p = p)
+        p, U, kth, X, Y, Z, W =  self._p, self._U, self._kth, self._X, self._Y, self._Z, self._W  
+        N = DerBasisBspline(U = U, p = p)
         N(u)
         span = N.get_span_index()
-        x = sum(N(u)*X[span - p : span+1]*W[span - p : span+1])
-        y = sum(N(u)*Y[span - p : span+1]*W[span - p : span+1])
-        z = sum(N(u)*Z[span - p : span+1]*W[span - p : span+1])
-        w = sum(N(u)*W[span - p : span+1])
+        x = sum(N(u)[kth][:]*X[span - p : span+1]*W[span - p : span+1])
+        y = sum(N(u)[kth][:]*Y[span - p : span+1]*W[span - p : span+1])
+        z = sum(N(u)[kth][:]*Z[span - p : span+1]*W[span - p : span+1])
+        w = sum(N(u)[kth][:]*W[span - p : span+1])
         return x/w, y/w, z/w
     
     def _knotsvector(self):
@@ -224,23 +225,164 @@ class Bspline:
     def plot(self):
         a = Plot(self)
         a()
+
+
+
+
+
+
+class DerBasisBspline:
+        
+    def __init__(self, U, p = 2):
+        """
+        construct Bspline basis function object
+
+        p == degree of the curve 
+        U == nonperiodic Knot vector  
+        nd == max derivative order
+        identities:
+        m = len(U) - 1
+        n = m - p - 1
+        
+        m+1 == length of the knot vector
+        n+1 == number basis function
+        """
+        self._U = U
+        self._p = p
+        self._m = len(U) - 1
+        self._n = self._m - p - 1
+#         if nd <= p:
+#             self._nd = nd
+#         else:
+#             print "you cannot calcualte derivative for k major than p"
+        self._nd = p
+                
+    def __call__(self, u):
+        """
+        this method compute the non vanishing basis function and their derivatives
+        Nurb book pag 72-73 using Eq. 2.9 pag 61 
+        """
+        self._i = self._find_span(u)
+        i = self._i
+        ders = self._compute_basisFunction(u)
+        return ders
+                
+    def _compute_basisFunction(self, u):
+        p, U, i, nd  = self._p, self._U, self._i, self._nd
+        N = np.ones((p+1, p+1), dtype = float)
+        left = np.ones(p+1)
+        right = np.ones(p+1)
+        for j in xrange(1, p+1, 1):
+            left[j] = u - U[i+1-j]
+            right[j] = U[i+j]- u
+            saved = 0.0
+            for r in xrange(j):
+                #lower triangle
+                N[j][r] = right[r+1] + left[j-r]
+                temp = N[r][j-1]/N[j][r]
+                #upper triangle
+                N[r][j] = saved + right[r+1]*temp
+                saved = left[j-r]*temp
+            N[j][j] = saved    
+        ders = np.ones((nd+1, p+1), dtype = float) 
+        a = np.ones((2, p+1), dtype = float)
+        #load the basis functions
+        for j in xrange(p+1):
+            ders[0][j] = N[j][p]
+        # This section computes the derivatives using Eq. 2.9 
+        for r in xrange(p+1):
+            s1 = 0
+            s2 = 1
+            a[0][0] = 1.0
+            #loop to compute kth derivatives
+            for k in xrange(1, nd+1, 1): 
+                d = 0.0
+                rk = r - k
+                pk = p - k
+                if r >= k:
+                    a[s2][0] = a[s1][0]/N[pk+1][rk]
+                    d = a[s2][0]*N[rk][pk]
+                if rk >= -1:
+                    j1 = 1
+                else:
+                    j1 = -rk
+                if r-1 <= pk:
+                    j2 = k-1
+                else:
+                    j2 = p-r
+                for j in xrange(j1, j2+1,1):
+                    a[s2][j] = (a[s1][j] - a[s1][j-1])/N[pk+1][rk+j]
+                    d += a[s2][j]*N[rk+j][pk]
+                if r <= pk:
+                    a[s2][k] = -a[s1][k-1]/N[pk+1][r]
+                    d += a[s2][k]*N[r][pk] 
+                ders[k][r] = d
+                j = s1
+                s1 = s2
+                s2 = j
+            #multiply through by the correct factor
+        r = p
+        for k in xrange(1, nd+1, 1):
+            for j in xrange(p+1):
+                ders[k][j] *= r
+                r *= (p-k)
+        return ders         
+                    
+     
+    def _find_span(self, u):
+        """
+        this method determine the knot span index
+        Nurbs book pag 68
+        
+        first it handles a special case u == um (last element of the knot vector)
+        then it uses a binary search
+        
+        """
+        n, p, U = self._n, self._p, self._U
+        if u == U[n+1]:
+            return n
+        low = p
+        high = n+1
+        mid = (low + high)/2
+        while u < U[mid] or u >= U[mid +1]:
+            if u < U[mid]:
+                high = mid
+            else:
+                low = mid
+            mid = (low+high)/2
+             
+        return mid
+        
+    def get_span_index(self):
+        return self._i    
+    
+    
+    
+    
+
+            
             
 if __name__=='__main__':
     U = np.array([0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0, 4.0, 5.0, 5.0, 5.0])
-    p = 4            
+    p = 2         
+    u = 2.5
+    prova = DerBasisBspline(U)
+    print prova(2.5)[0][2]
+    print prova(2.5)[1][2]
+    print prova(2.5)[2][2]   
 #     prova = Basis_bspline(U,p)
-    P = [Point(0.0, 0.0), Point(0.5, 1.0), Point(1.0, 0.0), Point(1.5, 2.0), Point(3.5, -1.0), Point(4.5, 0.0) ]
-#     P = [Point(0.0, 1.0), Point(2.79761904762, 1.59530618983), Point(5.59523809524, 2.2824786079), Point(8.39285714286, 2.50866465597), Point(11.1904761905, 2.86509988565)]
-#     print prova(4.0)
-#     print sum(prova(4.0))
-    prova2 = Bspline(P, p) 
-    print prova2.__class__.__name__   
-    prova2.plot()
-    print prova2.get_int_U() 
-    prova3 = Bezier(P)
-    prova3.plot()
-    axis('equal') 
-    show()      
+#     P = [Point(0.0, 0.0), Point(0.5, 1.0), Point(1.0, 0.0), Point(1.5, 2.0), Point(3.5, -1.0), Point(4.5, 0.0) ]
+# #     P = [Point(0.0, 1.0), Point(2.79761904762, 1.59530618983), Point(5.59523809524, 2.2824786079), Point(8.39285714286, 2.50866465597), Point(11.1904761905, 2.86509988565)]
+# #     print prova(4.0)
+# #     print sum(prova(4.0))
+#     prova2 = Bspline(P, p) 
+#     print prova2.__class__.__name__   
+#     prova2.plot()
+#     print prova2.get_int_U() 
+#     prova3 = Bezier(P)
+#     prova3.plot()
+#     axis('equal') 
+#     show()      
     
 # class Bspline(object):
 # 
