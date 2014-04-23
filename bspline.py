@@ -19,7 +19,7 @@ from bezier import Bezier
     
     
     
-class Basis_bspline:
+class BasisBspline:
         
     def __init__(self, U, p = 1):
         """
@@ -101,7 +101,7 @@ class Bspline:
     This class implement a rational Bspline with a nonperiodic uniform
     knot vectors (definition at pag 66-67 of Nurbs book). 
     """
-    def __init__(self, P, p = 2, a = 0, b = 1, kth = 0):
+    def __init__(self, P, p = 2, a = 0, b = 1):
         """
         Constructor 
         input:
@@ -122,7 +122,6 @@ class Bspline:
         self._b = b
         self._n = len(P) - 1
         self._m = self._n + p + 1
-        self._kth = kth
         self._U = self._knotsvector()
         self._X, self._Y, self._Z, self._W = self._sep()
         
@@ -132,14 +131,14 @@ class Bspline:
         see pag 82 of Nurbs book
         
         """
-        p, U, kth, X, Y, Z, W =  self._p, self._U, self._kth, self._X, self._Y, self._Z, self._W  
-        N = DerBasisBspline(U = U, p = p)
+        p, U, X, Y, Z, W =  self._p, self._U, self._X, self._Y, self._Z, self._W  
+        N = BasisBspline(U = U, p = p)
         N(u)
         span = N.get_span_index()
-        x = sum(N(u)[kth][:]*X[span - p : span+1]*W[span - p : span+1])
-        y = sum(N(u)[kth][:]*Y[span - p : span+1]*W[span - p : span+1])
-        z = sum(N(u)[kth][:]*Z[span - p : span+1]*W[span - p : span+1])
-        w = sum(N(u)[kth][:]*W[span - p : span+1])
+        x = sum(N(u)[:]*X[span - p : span+1]*W[span - p : span+1])
+        y = sum(N(u)[:]*Y[span - p : span+1]*W[span - p : span+1])
+        z = sum(N(u)[:]*Z[span - p : span+1]*W[span - p : span+1])
+        w = sum(N(u)[:]*W[span - p : span+1])
         return x/w, y/w, z/w
     
     def _knotsvector(self):
@@ -306,7 +305,7 @@ class DerBasisBspline:
                     j1 = 1
                 else:
                     j1 = -rk
-                if r-1 <= pk:
+                if (r-1) <= pk:
                     j2 = k-1
                 else:
                     j2 = p-r
@@ -357,8 +356,59 @@ class DerBasisBspline:
         return self._i    
     
     
+
+class DerBspline:
+    """
+    this routine work only if we are working with Bspline but not with Nurbs 
+    defined like a 4 dimensional Bspline 
+    This class implement and use to evaluate a Bspline derivative Algorithm A3.3 pag 98
+    that evaluates the derivative by means of trasforming the control Points 
+    using equation 3.8 pag 97 of Nurbs book 
     
-    
+    """
+    def __init__(self, bspline, kth = 1):
+        self._bspline = bspline
+        if bspline.get_p() < kth :
+            print "the degree of the Bspline is lower than kth"
+            self._kth = bspline.get_p()
+        else:
+            self._kth = kth
+        self._calcDerCP()
+        self._p = bspline.get_p() - self._kth
+        self._derBspline = Bspline(self._derCP[self._kth], p = self._p)
+        
+    def __call__(self, u):
+        
+        return self._derBspline(u)    
+     
+    def _calcDerCP(self):
+        bspline = self._bspline
+        n, p, U, P = bspline.get_n(), bspline.get_p(), bspline.get_U(), bspline.get_cp() 
+        r1 = 0 
+        r2 = n # r2 = n all controll point are calculated
+        r = r2 - r1
+        PK = []
+        PK.append(P)
+        print PK[0][0], PK[0][1]
+        for k in xrange(1,p+1,1):
+            Ptemp = []
+            tmp = p - k + 1
+            for i in xrange(r-k+1):
+                N = (PK[k-1][i+1] - PK[k-1][i])
+                D = 1.0/(U[r1+i+p+1] - U[r1+i+k])
+                N *= D 
+                Ptemp.append(N)
+            PK.append(Ptemp)
+        print PK   
+        self._derCP = PK
+                
+    def plot(self):
+        self._derBspline.plot()
+               
+   
+        
+                 
+     
 
             
             

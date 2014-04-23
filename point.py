@@ -3,7 +3,7 @@ In this module it is implemented the class Point which represent
 the cartesian point    
 """
 
-from math import sqrt, pi
+from math import sqrt, pi, pow
 from matplotlib.pylab import plot
 
 
@@ -20,6 +20,7 @@ class Point:
         self.y = y
         self.z = z
         self.w = w
+        
     def __call__(self):
         return self.x, self.y, self.z     
         
@@ -75,18 +76,34 @@ class Point:
 
 
 
-class Norm:
+class Vector:
     
     def __init__(self, x = 0.0, y = 0.0, z = 0.0):
-        self.x = x/sqrt(x**2+y**2+z**2)
-        self.y = y/sqrt(x**2+y**2+z**2)
-        self.z = z/sqrt(x**2+y**2+z**2)
+        self.x = x
+        self.y = y
+        self.z = z
+        
+
+    def __repr__(self):
+        return "Vector(%s, %s, %s)" % (self.x, self.y, self.z) 
     
-    def __call__(self):
-        return self.x, self.y, self.z#, [0.0, self.z]
-    
-    def plot2D(self):
-        plot([0.0, self.x], [0.0, self.y])
+    def norm(self):
+        return normVector(Vector(self.x, self.y, self.z))
+
+
+
+# class Norm:
+#     
+#     def __init__(self, v):
+#         self.x = x/sqrt(x**2+y**2+z**2)
+#         self.y = y/sqrt(x**2+y**2+z**2)
+#         self.z = z/sqrt(x**2+y**2+z**2)
+#     
+#     def __call__(self):
+#         return self.x, self.y, self.z#, [0.0, self.z]
+#     
+#     def plot2D(self):
+#         plot([0.0, self.x], [0.0, self.y])
         
        
             
@@ -102,6 +119,12 @@ class Angle:
     def getAngle(self):
         return self._angle          
     
-             
-def normal2D(v1):
-    return Norm(-v1.y, v1.x)
+
+def normVector(v):
+    x = v.x/sqrt(v.x**2+v.y**2+v.z**2)
+    y = v.y/sqrt(v.x**2+v.y**2+v.z**2)
+    z = v.z/sqrt(v.x**2+v.y**2+v.z**2)
+    return Vector(x, y, z)
+            
+def normal2D(v):
+    return Vector(-v.y, v.x)

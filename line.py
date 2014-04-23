@@ -4,7 +4,7 @@ Created on Apr 18, 2014
 @author: salvatorevitale
 """
 
-from point import Point, Norm, Angle
+from point import Point, Vector, Angle
 from math import sin, cos
 from matplotlib.pylab import *
 
