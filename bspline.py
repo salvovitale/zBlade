@@ -389,7 +389,7 @@ class DerBspline:
         r = r2 - r1
         PK = []
         PK.append(P)
-        print PK[0][0], PK[0][1]
+       
         for k in xrange(1,p+1,1):
             Ptemp = []
             tmp = p - k + 1
@@ -399,7 +399,7 @@ class DerBspline:
                 N *= D 
                 Ptemp.append(N)
             PK.append(Ptemp)
-        print PK   
+           
         self._derCP = PK
                 
     def plot(self):
@@ -407,11 +407,152 @@ class DerBspline:
                
    
         
-                 
+class BsplineSurface:
+    
+    def __init__(self, P, pi = 1, pj = 3, a = 0, b = 1 ): 
+        """
+        Constructor 
+        input:
+        pi == degree of Bspline using as a control points the Points in a row of P
+        pj == degree of Bspline using as a control points the Points in a column of P 
+        P == Matrix of control point   
+        a == lower bound of the interval for the knot vector domain
+        b == upper bound of the interval for the knot vector domain
+        
+        
+        identities:
+        n+1 = len(P) number of cont. Point namely number of basis function
+        m+1 = len(U) length of the knot vector
+        m = n + p + 1
+        """
+        self._P = P
+        self._pi = pi
+        self._pj = pj
+        self._a = a
+        self._b = b
+        self._ni = len(P) - 1
+        self._nj = len(P[0]) - 1
+        self._mi = self._ni + pi + 1
+        self._mj = self._nj + pj + 1
+        
+        self._Ui, self._Uj = self._knotsvector()
+        self._X, self._Y, self._Z, self._W = self._sep()
+        
+    def __call__(self, ui, uj):
+        """
+        this method evaluats the bspline rational function at the value of the parameter u 
+        see pag 82 of Nurbs book
+        
+        """
+        pi, pj, Ui, Uj, X, Y, Z, W =  self._pi, self._pj, self._Ui, self._Uj, self._X, self._Y, self._Z, self._W  
+        Ni = BasisBspline(U = Ui, p = pi)
+        Nj = BasisBspline(U = Uj, p = pj)
+        Ni(ui)
+        Nj(uj)
+        span_i = Ni.get_span_index()
+        span_j = Nj.get_span_index()
+        idim = (span_i+1)-(span_i - pi)
+        jdim = (span_j+1)-(span_j - pj)
+        xtemp = np.ones((idim, jdim), dtype = float)
+        ytemp = np.ones((idim, jdim), dtype = float)
+        ztemp = np.ones((idim, jdim), dtype = float)
+        wtemp = np.ones((idim, jdim), dtype = float)
+        for i in xrange (idim):
+            for j in xrange (jdim):
+               xtemp[i][j], ytemp[i][j] = X[span_i - pi +i][span_j - pj +j], Y[span_i - pi +i][span_j - pj +j]
+               ztemp[i][j], wtemp[i][j] = Z[span_i - pi +i][span_j - pj +j], W[span_i - pi +i][span_j - pj +j] 
+#         print xtemp
+#         print X
+#         print span_i - pi 
+#         print span_i+1
+#         print span_j - pj 
+#         print span_j+1
+#         print span_i
+#         print span_j 
+#         print Nj(uj)[:]
+#         print Ni(ui)[:]
+#         print dot(Ni(ui),dot(xtemp*wtemp,Nj(uj)[:]))
+            
+        x = dot(Ni(ui),dot(xtemp*wtemp,Nj(uj)[:])) 
+        y = dot(Ni(ui),dot(ytemp*wtemp,Nj(uj)[:]))
+        z = dot(Ni(ui),dot(ztemp*wtemp,Nj(uj)[:]))
+        w = dot(Ni(ui),dot(wtemp,Nj(uj)[:]))
+             
+        
+        return x/w, y/w, z/w
+        
+    def _knotsvector(self):
+        
+        """
+        construct a uniform nonperiodic knots vectors
+        {a_0, a_1,..., a_p , u_p+1,..., u_m-p-1, b_m-p, ... ,b_m-1, b_m}
+        
+        d = (b-a)/(m-2p)
+        u_p+1 = a + d
+        u_p+2 = a + 2*d
+        ...
+        u_m-p-1 = a + j*d 
+        """
+        pi, pj, mi, mj,  a, b = self._pi, self._pj, self._mi, self._mj, self._a, self._b
+        U1i = np.ones(pi+1)
+        U1i *= a
+        U2i = self._internal_knots(pi, mi) 
+        U3i = np.ones(pi+1)
+        U3i *= b
+        U1j = np.ones(pj+1)
+        U1j *= a
+        U2j = self._internal_knots(pj, mj) 
+        U3j = np.ones(pj+1)
+        U3j *= b
+        Ui = np.concatenate((U1i, np.concatenate((U2i, U3i))))
+        Uj = np.concatenate((U1j, np.concatenate((U2j, U3j))))
+        return Ui, Uj                  
      
-
-            
-            
+    
+    def _internal_knots(self, p, m):
+        """
+        calculate the values of the uniform internal knots
+          
+        """
+        a, b = self._a, self._b
+        d = (b-a)/float(m-2*p)
+        int_knot = np.ones((m-2*p-1))
+        for j in xrange(m-2*p-1):
+            int_knot[j] = a + (j+1)*d
+        return int_knot
+    
+    def _sep(self):
+        ni, nj, P = self._ni, self._nj, self._P
+        x = np.ones((ni+1, nj+1), dtype = float)
+        y = np.ones((ni+1, nj+1), dtype = float)
+        z = np.ones((ni+1, nj+1), dtype = float)
+        w = np.ones((ni+1, nj+1), dtype = float)
+        for i in xrange(ni+1):
+            for j in xrange(nj+1):
+                x[i][j], y[i][j], z[i][j], w[i][j] = P[i][j].split()
+        return x, y, z, w
+    
+    
+    def get_U(self):
+        return self._Ui, self._Uj
+    
+    def get_x(self):
+        return self._X
+    
+    
+    def get_y(self):
+        return self._Y
+    
+    def get_z(self):
+        return self._Z
+    
+    
+    def get_w(self):
+        return self._W
+    
+    
+    
+        
 if __name__=='__main__':
 #     U = np.array([0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0, 4.0, 5.0, 5.0, 5.0])
 #     p = 2         
@@ -425,13 +566,81 @@ if __name__=='__main__':
 
 
 
-    P = [Point(0.0, 0.0), Point(0.5, 1.0), Point(1.0, 0.0), Point(1.5, 2.0), Point(3.5, -1.0), Point(4.5, 0.0) ]
-    p = 5
-    prova1 = Bspline(P, p, kth = 3)
-    prova2 = Bspline(P, p, kth = 2)
-    prova1.plot()
-    prova2.plot()
-    axis('equal') 
+    P1 = [Point(0.0, 0.0, 0.0), Point(0.5, 1.0, 0.0), Point(1.0, 0.0, 0.0), Point(1.5, 2.0, 0.0, 3.0), Point(3.5, -1.0, 0.0), Point(4.5, 0.0, 0.0) ]
+    P2 = [Point(1.0, 0.0, 1.0), Point(1.5, 1.0, 1.0, 3.0), Point(2.0, 0.0, 1.0), Point(2.5, 2.0, 1.0), Point(4.5, -1.0, 1.0), Point(5.5, 0.0, 1.0) ]
+    pi = 1
+    pj = 3
+    P = [P1, P2]
+    prova = BsplineSurface(P, pi = pi, pj = pj)
+    prova1 = Bspline(P1, p = 3)
+#     print prova.get_U()
+#     print prova.get_z()
+#     print prova.get_y()
+#     print prova.get_x()
+#     print prova.get_w()
+#     print prova1.get_U()
+    from mpl_toolkits.mplot3d import Axes3D
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+# 
+#     z = np.linspace(0, 1, 100)
+#     x = z * np.sin(20 * z)
+#     y = z * np.cos(20 * z)
+# 
+#     c = x + y
+    u = np.linspace(0.0, 1.0, 100)
+    v = np.linspace(0.0, 1.0, 100)
+    
+    x1 = np.ones((100), dtype = float)
+    y1 = np.ones((100), dtype = float)
+    z1 = np.ones((100), dtype = float)
+    for i in xrange(100):
+        x1[i], y1[i], z1[i] = prova(1.0, u[i])
+    
+    x2 = np.ones((100), dtype = float)
+    y2 = np.ones((100), dtype = float)
+    z2 = np.ones((100), dtype = float)
+    for i in xrange(100):
+        x2[i], y2[i], z2[i] = prova(0.8, u[i])
+    
+    x3 = np.ones((100), dtype = float)
+    y3 = np.ones((100), dtype = float)
+    z3 = np.ones((100), dtype = float)
+    for i in xrange(100):
+        x3[i], y3[i], z3[i] = prova(0.6, u[i])
+    
+    
+    x4 = np.ones((100), dtype = float)
+    y4 = np.ones((100), dtype = float)
+    z4 = np.ones((100), dtype = float)
+    for i in xrange(100):
+        x4[i], y4[i], z4[i] = prova(0.4, u[i])
+                
+    x5 = np.ones((100), dtype = float)
+    y5 = np.ones((100), dtype = float)
+    z5 = np.ones((100), dtype = float)
+    for i in xrange(100):
+        x5[i], y5[i], z5[i] = prova(0.2, u[i])
+    x6 = np.ones((100), dtype = float)
+    y6 = np.ones((100), dtype = float)
+    z6 = np.ones((100), dtype = float)
+    for i in xrange(100):
+        x6[i], y6[i], z6[i] = prova(0.0, u[i])        
+    
+    ax.plot(x1, y1, z1, '-b')
+    ax.plot(x2, y2, z2, '-b')
+    ax.plot(x3, y3, z3, '-b')
+    ax.plot(x4, y4, z4, '-b')
+    ax.plot(x5, y5, z5, '-b')
+    ax.plot(x6, y6, z6, '-b')
+    ax.scatter(prova.get_x()[1][:], prova.get_y()[1][:], prova.get_z()[1][:])
+    ax.scatter(prova.get_x()[0][:], prova.get_y()[0][:], prova.get_z()[0][:])
+    ax.plot(prova.get_x()[1][:], prova.get_y()[1][:], prova.get_z()[1][:], '-r')
+    ax.plot(prova.get_x()[0][:], prova.get_y()[0][:], prova.get_z()[0][:], '-r')
+#     print prova(1.0, 0.0)
+# 
+#     axis('equal')
+#     ax.plot_surface(x, y, z, rstride=1, cstride=1, linewidth=0) 
     show()  
 # #     P = [Point(0.0, 1.0), Point(2.79761904762, 1.59530618983), Point(5.59523809524, 2.2824786079), Point(8.39285714286, 2.50866465597), Point(11.1904761905, 2.86509988565)]
 # #     print prova(4.0)

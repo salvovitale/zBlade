@@ -20,7 +20,7 @@ from math import sqrt, pi, cos, sin, tan
 
 class CamberlineDef:
     
-    def __init__(self, le = 0.0, beta_in = 30.0 , beta_out = -70.0 , c_ax = 1.0, stagger = 40.0):
+    def __init__(self, le = 0.0, beta_in = 30.0 , beta_out = -70.0 , c_ax = 1.0, stagger = 50.0):
         if le == 0.0:
             self._le = Point(0.0, 0.0)
         else:
@@ -30,11 +30,15 @@ class CamberlineDef:
         self._c_ax = c_ax
         self._stagger = Angle(stagger)
         self._calc_te()
+        self._calc_chord()
     
     def _calc_te(self):
         le, c_ax, stagger = self._le, self._c_ax, self._stagger
         self._te = Point(le.x + c_ax, le.y - c_ax*tan(stagger()))
     
+    def _calc_chord(self):
+        le, te = self._le, self._te
+        self._c = le.distance(te)
     def getLe(self):
         return self._le    
     
@@ -52,6 +56,9 @@ class CamberlineDef:
     
     def getTe(self):
         return self._te
+    
+    def getC(self):
+        return self._c
     
 
 class CamberlineCP:
@@ -71,6 +78,7 @@ class CamberlineCP:
         return self._cp
         
     def _interPoint(self):
+        print self._leLine.intersect(self._teLine)
         self._int_p = self._leLine.intersect(self._teLine)
               
     def _controlPoint(self):
@@ -80,7 +88,8 @@ class CamberlineCP:
         if opt == 2:
             self._cp = [le, le.towards(int_p, t1), te.towards(int_p, t2), te]
                 
-                
+    def getCambDef(self):
+        return self._cambDef            
            
                
             
@@ -89,6 +98,7 @@ class Camberline:
     
     def __init__(self, cambCP, p = 2):
         self._cambCP = cambCP
+        self._cambDef = cambCP.getCambDef()
         self._p = p
         self._camb = Bspline(cambCP(), p = p ) 
         self._derCamb = DerBspline(self._camb,  kth = 1)
@@ -98,6 +108,9 @@ class Camberline:
     
     def getDerCamb(self, u):
         return self._derCamb(u)
+    
+    def getCambDef(self):
+        return self._cambDef 
     
     def plotCamb(self):
         self._camb.plot()
@@ -190,6 +203,9 @@ class CamberlineNormalP:
         for i in xrange(len(cambP)):
             L.append(Line(cambP[i], normalCambP[i]))
         self._normalLine = L                      
+    
+    def getCamb(self):
+        return self._camb
         
     def getCambP(self):
         return self._cambP

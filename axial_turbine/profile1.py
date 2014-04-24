@@ -60,11 +60,11 @@ class Profile1CP:
         
         
     def _calcProfCP(self):
-        camberNormalP, dDistP, sp = self._camberNormalP, self._dDistP, self._sp
+        chord, camberNormalP, dDistP, sp = self._camberNormalP.getCamb().getCambDef().getC(), self._camberNormalP, self._dDistP, self._sp
         profCP = []
         profCP.append(camberNormalP.getNormalLine()[0](0.0))
         for i in xrange(len(dDistP)):
-            profCP.append(camberNormalP.getNormalLine()[i](dDistP[i]*sp))
+            profCP.append(camberNormalP.getNormalLine()[i](dDistP[i]*sp*chord))
         profCP.append(camberNormalP.getNormalLine()[len(dDistP)-1](0.0)) 
         self._profCP = profCP
         

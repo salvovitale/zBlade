@@ -18,7 +18,7 @@ class Line(object):
         """
         to costruct a line it needs a point and a direction
         P -> Point
-        T -> norm
+        T -> Vector
         
         """
         self.P = P
@@ -30,12 +30,16 @@ class Line(object):
     
     def intersect(self, other):
         P1,T1,P2,T2 = self.P, self.T, other.P, other.T
-        u = (T2.y*(P2.x - P1.x) - T2.x*(P2.y - P2.y))/(T1.x*T2.y - T1.y*T2.x)
-        return self(u)
+        u = (T2.y*(P2.x - P1.x) - T2.x*(P2.y - P1.y))/(T1.x*T2.y - T1.y*T2.x)
+#         print (P2.x - P1.x)
+#         print (P2.y - P2.y)
+#         print T1.x, T1.y, T2.x, T2.y
+# #        u1 = (T1.y*(P2.x - P1.x) - T1.x*(P2.y - P2.y))/(T1.x*T2.y - T1.y*T2.x)
+        return self(u)  
            
     def plot(self):
         P1 = self.P
-        P2 = self.__call__(1.0)
+        P2 = self.__call__(-1.5)
         plot([P1.x, P2.x],[P1.y, P2.y])
         
     
@@ -46,17 +50,19 @@ class Line(object):
 if __name__=='__main__':
     
     ang1 = Angle(30.0)
-    ang2 = Angle(-60.0)
+    ang2 = Angle(-45.0)
     P1 = Point()
-    P2 = Point(1.0,0.0)
-    T1 = Norm(cos(ang1()), sin(ang1()))
-    T2 = Norm(cos(ang2()), sin(ang2()))
+    P2 = Point(1.0,-1.0)
+    T1 = Vector(cos(ang1()), sin(ang1()))
+    T2 = Vector(cos(ang2()), sin(ang2()))
     l1 = Line(P1,T1)
     l2 = Line(P2,T2)
-#     l1.plot()
-#     l2.plot()
-    T1.plot2D()
+    l1.plot()
+    l2.plot()
+#     T1.plot2D()
     print(l1.intersect(l2))
+    axis('equal')
     show()
+    
     
   
