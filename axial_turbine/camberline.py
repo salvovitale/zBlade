@@ -19,21 +19,25 @@ from math import sqrt, pi, cos, sin, tan
 
 
 class CamberlineDef:
+    """
+    I think is better to bring pithc and height directly in camberlineCP
+    """
     
-    def __init__(self, le = 0.0, beta_in = 30.0 , beta_out = -70.0 , c_ax = 1.0, stagger = 50.0):
+    def __init__(self, le = 0.0, beta_in = 0.0 , beta_out = -70.0 , c_ax = 1.0, stagger = 40.0):
         if le == 0.0:
             self._le = Point(0.0, 0.0)
         else:
-            self._le = le
+            self._le = Point(le.x, le.y)
         self._beta_in  = Angle(beta_in)
         self._beta_out = Angle(beta_out)
         self._c_ax = c_ax
         self._stagger = Angle(stagger)
         self._calc_te()
         self._calc_chord()
+         
     
     def _calc_te(self):
-        le, c_ax, stagger = self._le, self._c_ax, self._stagger
+        le, c_ax, stagger= self._le, self._c_ax, self._stagger
         self._te = Point(le.x + c_ax, le.y - c_ax*tan(stagger()))
     
     def _calc_chord(self):
@@ -60,29 +64,40 @@ class CamberlineDef:
     def getC(self):
         return self._c
     
+    
 
 class CamberlineCP:
     
-    def __init__(self, cambDef, opt = 1, t1 = 0.5, t2 = 0.5):
+    def __init__(self, cambDef, opt = 1, t1 = 0.5, t2 = 0.5,  pitch = 0.0, height = 0.0):
         self._cambDef = cambDef
         self._opt = opt
         self._t1 = t1
         self._t2 = t2
+        self._pitch = pitch
+        self._height = height
+        self._translation()
         #definire le due linee per calcolare l'intersezione
-        self._leLine = Line(cambDef.getLe(), Vector(cos(cambDef.getBin()),sin(cambDef.getBin())))
-        self._teLine = Line(cambDef.getTe(), Vector(cos(cambDef.getBout()),sin(cambDef.getBout())))
+        self._leLine = Line(self._le, Vector(cos(cambDef.getBin()),sin(cambDef.getBin())))
+        self._teLine = Line(self._te, Vector(cos(cambDef.getBout()),sin(cambDef.getBout())))
         self._interPoint()
+        
         self._controlPoint()
     
     def __call__(self):
         return self._cp
         
+
+    def _translation(self):
+        leDef, teDef, pitch, height = self._cambDef.getLe(), self._cambDef.getTe(), self._pitch, self._height
+        self._le = Point(leDef.x, leDef.y + pitch, height)
+        self._te = Point(teDef.x, teDef.y + pitch, height)    
+    
     def _interPoint(self):
-        print self._leLine.intersect(self._teLine)
+#         print self._leLine.intersect(self._teLine)
         self._int_p = self._leLine.intersect(self._teLine)
-              
+    
     def _controlPoint(self):
-        le, te, int_p, opt, t1, t2 = self._cambDef.getLe(), self._cambDef.getTe(), self._int_p, self._opt, self._t1, self._t2  
+        le, te, int_p, opt, t1, t2 = self._le, self._te, self._int_p, self._opt, self._t1, self._t2  
         if opt == 1:
             self._cp =[le, int_p, te]
         if opt == 2:
