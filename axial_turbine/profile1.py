@@ -75,9 +75,40 @@ class Profile1CP:
         
         
         
+class Profile1:
+     
+    def __init__(self, cp_s, cp_p, p = 3, pitch = 0.0, height = 0.0 ):
+        self._p = p
+        self._pitch = pitch
+        self._height = height
+        if height == 0.0 and pitch == 0.0:
+            self._cp_s = cp_s
+            self._cp_p = cp_p
+        else:
+            self._cp_s = self._redefCP(cp_s)
+            self._cp_p = self._redefCP(cp_p)
         
+        self._prof_s = Bspline(self._cp_s, p = p)    
+        self._prof_p = Bspline(self._cp_p, p = p)
             
         
+    def _redefCP(self, cp):
+        pitch, height = self._pitch, self._height
+        cp_new = []
+        for i in xrange(len(cp)):
+            cp_new.append(Point(cp[i].x, cp[i].y + pitch, cp[i].z + height))
+        return cp_new    
+        
+        
+    def getProfS(self, u):
+        return self._prof_s(u)              
+    
+    def getProfP(self, u):
+        return self._prof_p(u)
+    
+    def plot(self):
+        self._prof_s.plot()        
+        self._prof_p.plot()
         
 
         

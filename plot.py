@@ -14,7 +14,7 @@ from matplotlib.pylab import *
 
 class Plot:
     
-    def __init__(self, curve, ccp = 'bo', ccpoly = '-b', ccurve = '-r', lcp = 'Control Point', lcpoly = 'Control Polygon ', lcurve = 'Parametric Curve', xlabel = 'x', ylabel = 'y', discr = 100):
+    def __init__(self, curve, ccp = 'bo', ccpoly = '-r', ccurve = '-b', lcp = 'Control Point', lcpoly = 'Control Polygon ', lcurve = 'Parametric Curve', xlabel = 'x', ylabel = 'y', discr = 100):
         self._curve = curve
         self._discr = discr
         self._x, self._y = self._generate()
