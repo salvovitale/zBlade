@@ -247,33 +247,33 @@ class BF_div(Div):
 
 
 if __name__=='__main__':            
-    filename = 'div.dat'           
-    xy_p = pp.read_xy_p(filename) 
-    p = 3
-    fit = BF_div(xy_p, ncp = 6 , type = 1,  p = p)
-    Po = fit.get_cp()
+#     filename = 'div.dat'           
+#     xy_p = pp.read_xy_p(filename) 
+#     p = 3
+#     fit = BF_div(xy_p, ncp = 6 , type = 1,  p = p)
+#     Po = fit.get_cp()
 #     init_guess = Bspline(Po)
 #     pig = Plot(init_guess, ccp = 'ko', ccpoly = '-k', ccurve = '-y', lccp = 'IG Control Point', lccpoly = 'IG Control Polygon ', lccurve = ' IG Parametric Curve')
 #     pig() 
       
 #     print Po
-    Ao = fit.get_A(Po)
-#     print Ao
-    B =fit.get_bounds()
+#     Ao = fit.get_A(Po)
+# #     print Ao
+#     B =fit.get_bounds()
 #     print Po, Ao
 #     print B
         
 #     fit.get_curve().bplot()
-      
-    A = scipy.optimize.fmin_slsqp(fit, Ao, bounds = B, iter = 1000)
-    print A
-    P = fit.get_P(A)
-    print P
-    fit_curve = Bspline(P, p)
-    print fit_curve.get_U()
-    fit_curve.plot()
-#     
-    plot(xy_p[0,:], xy_p[1,:], '-g')
+#       
+#     A = scipy.optimize.fmin_slsqp(fit, Ao, bounds = B, iter = 1000)
+#     print A
+#     P = fit.get_P(A)
+#     print P
+#     fit_curve = Bspline(P, p)
+#     print fit_curve.get_U()
+#     fit_curve.plot()
+# #     
+#     plot(xy_p[0,:], xy_p[1,:], '-g')
 
 
 #     p = Plot(fit_curve)
@@ -289,16 +289,16 @@ if __name__=='__main__':
 #     p3 = Point(1.0, 1.0)
 #     P= [p0, p1, p2, p3]
 # #     
-#     c = Nozzle()
+    c = Nozzle()
 # #     d = Nozzle(nc = 5, nd = 5)
 # #     e = Nozzle(nc = 6, nd = 6)
-#     c.plot()
+    c.plot()
 #     axis([-3, 6, 0, 10 ])
 #     d.plot()
 #     e.plot()
     
-    err = [0.765107371068, 0.381679555444, 0.371869452821, 0.332929094068, 0.307328456426]
-    ncp = [4, 5, 6, 7, 8]
+#     err = [0.765107371068, 0.381679555444, 0.371869452821, 0.332929094068, 0.307328456426]
+#     ncp = [4, 5, 6, 7, 8]
     
 #     axis([0, xy_p[0,len(xy_p[0,:])-1], 0,xy_p[0,len(xy_p[0,:])-1] ])
 #     title('nozzle modeler')
@@ -312,7 +312,7 @@ if __name__=='__main__':
 #     axis([3, 9, 0, 1 ])
 #     title('fitting error')
 #     savefig('fitting_error.eps')
-#     axis('equal')
+    axis('equal')
 #     t = 0.5
     
 #     curve = np.array(c(ti) for ti in t)
