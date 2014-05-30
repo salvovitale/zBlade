@@ -20,7 +20,7 @@ class ConvDef(object):
     """
 
 
-    def __init__(self, l = 2.0, A = 2.0, m = 0.0, ncp = 6, type = 1):
+    def __init__(self, l = 2.0, A = 2.0, m = 0.0, ncp = 4, type = 1):
         """
         Constructor
         
@@ -137,7 +137,7 @@ class DivDef(ConvDef):
  
 
 
-class ConvDiv:
+class NozzleComp:
     
     def __init__(self, cdDef, p = 3):
         

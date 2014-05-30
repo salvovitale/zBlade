@@ -32,8 +32,8 @@ class Plot:
             
         
     def __call__(self):
-        plot(self._curve.get_x(), self._curve.get_y(), self._ccp)
-        plot(self._curve.get_x(), self._curve.get_y(), self._ccpoly)
+#         plot(self._curve.get_x(), self._curve.get_y(), self._ccp)
+#         plot(self._curve.get_x(), self._curve.get_y(), self._ccpoly)
         plot(self._x, self._y, self._ccurve)
 #         if self._curve.__class__.__name__ == 'Bspline' :
 #             plot(self._xU, self._yU, 'ro') 
