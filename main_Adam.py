@@ -23,9 +23,9 @@ if __name__ == '__main__':
 #     print div_part
     plot(div_part[0,:], div_part[1,:], '-g')
     #this P comes from the fitting
-    P = [Point(0.0, 1.0), Point(1.86507936508, 1.0), Point(3.73015873016, 1.36696824976), Point(5.59523809524, 2.79153153735), Point(7.46031746032, 2.43521509083), Point(9.3253968254, 2.805522906), Point(11.1904761905, 2.86509988565)]
+#     P = [Point(0.0, 1.0), Point(1.86507936508, 1.0), Point(3.73015873016, 1.36696824976), Point(5.59523809524, 2.79153153735), Point(7.46031746032, 2.43521509083), Point(9.3253968254, 2.805522906), Point(11.1904761905, 2.86509988565)]
     
-    div2 = Bspline(P, p = 6)
+#     div2 = Bspline(P, p = 6)
 #     div2.plot()
     
     fl = 0.5 
@@ -47,8 +47,8 @@ if __name__ == '__main__':
     
     
 ##   printing to the file the geometry  
-    u = np.linspace(0.0, 1.0, 50)
-    t = np.linspace(0.0, 1.0, 5)
+    u = np.linspace(0.0, 1.0, 200)
+#     t = np.linspace(0.0, 1.0, 5)
     out_file = open("axial_nozzle/convdiv_geometry/nozzle.dat","w")
 #     out_file.write("profile \n")
 #     out_file.write("\n")
@@ -61,19 +61,19 @@ if __name__ == '__main__':
      
     out_file.close() 
     
-    out_file = open("axial_nozzle/convdiv_geometry/needle.dat","w")
-#     out_file.write("profile \n")
-#     out_file.write("\n")
-        
-    for  i in xrange(50):
-        x,y,z = tip(u[i])
-        out_file.write("%f %f %f \n" %(x,y, 0.000))
-    for  i in xrange(5):
-        x,y,z = corner(t[i])
-        out_file.write("%f %f %f \n" %(x,y, 0.000))    
-    out_file.write("%f %f %f \n" %(div_part[0,len(div_part[0,:])-1], y, 0.000))
-     
-    out_file.close() 
+#     out_file = open("axial_nozzle/convdiv_geometry/needle.dat","w")
+# #     out_file.write("profile \n")
+# #     out_file.write("\n")
+#         
+#     for  i in xrange(50):
+#         x,y,z = tip(u[i])
+#         out_file.write("%f %f %f \n" %(x,y, 0.000))
+#     for  i in xrange(5):
+#         x,y,z = corner(t[i])
+#         out_file.write("%f %f %f \n" %(x,y, 0.000))    
+#     out_file.write("%f %f %f \n" %(div_part[0,len(div_part[0,:])-1], y, 0.000))
+#      
+#     out_file.close() 
     
        
       
