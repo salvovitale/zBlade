@@ -1,11 +1,11 @@
 import sys
  
-utility_folder = '../utility/'
-sys.path.insert(0, utility_folder)
+#utility_folder = '../utility/'
+#sys.path.insert(0, utility_folder)
 from matplotlib.pylab import *
 from math import factorial
 import util as ut
-import preproc_prof as pp
+#import preproc_prof as pp
 import scipy.optimize
 from point import Point
 from plot import Plot
