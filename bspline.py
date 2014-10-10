@@ -210,13 +210,11 @@ class Bspline:
     def get_x(self):
         return self._X
     
-    
     def get_y(self):
         return self._Y
     
     def get_z(self):
-        return self._Z
-    
+        return self._Z 
     
     def get_w(self):
         return self._W
@@ -554,6 +552,8 @@ class BsplineSurface:
     
         
 if __name__=='__main__':
+    
+    close('all')
 #     U = np.array([0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0, 4.0, 5.0, 5.0, 5.0])
 #     p = 2         
 #     u = 2.5
@@ -562,9 +562,6 @@ if __name__=='__main__':
 #     print prova(2.5)[1][2]
 #     print prova(2.5)[2][2]   
 #     prova = Basis_bspline(U,p)
-
-
-
 
     P1 = [Point(0.0, 0.0, 0.0), Point(0.5, 1.0, 0.0), Point(1.0, 0.0, 0.0), Point(1.5, 2.0, 0.0, 3.0), Point(3.5, -1.0, 0.0), Point(4.5, 0.0, 0.0) ]
     P2 = [Point(1.0, 0.0, 1.0), Point(1.5, 1.0, 1.0, 3.0), Point(2.0, 0.0, 1.0), Point(2.5, 2.0, 1.0), Point(4.5, -1.0, 1.0), Point(5.5, 0.0, 1.0) ]
@@ -627,16 +624,16 @@ if __name__=='__main__':
     for i in xrange(100):
         x6[i], y6[i], z6[i] = prova(0.0, u[i])        
     
-    ax.plot(x1, y1, z1, '-b')
-    ax.plot(x2, y2, z2, '-b')
-    ax.plot(x3, y3, z3, '-b')
-    ax.plot(x4, y4, z4, '-b')
-    ax.plot(x5, y5, z5, '-b')
-    ax.plot(x6, y6, z6, '-b')
-    ax.scatter(prova.get_x()[1][:], prova.get_y()[1][:], prova.get_z()[1][:])
+    ax.plot(x1, y1, z1, '-b')   # plot bsplines
+#    ax.plot(x2, y2, z2, '-b')
+#    ax.plot(x3, y3, z3, '-b')
+#    ax.plot(x4, y4, z4, '-b')
+#    ax.plot(x5, y5, z5, '-b')
+#    ax.plot(x6, y6, z6, '-b')
+    ax.scatter(prova.get_x()[1][:], prova.get_y()[1][:], prova.get_z()[1][:])   # plot points
     ax.scatter(prova.get_x()[0][:], prova.get_y()[0][:], prova.get_z()[0][:])
-    ax.plot(prova.get_x()[1][:], prova.get_y()[1][:], prova.get_z()[1][:], '-r')
-    ax.plot(prova.get_x()[0][:], prova.get_y()[0][:], prova.get_z()[0][:], '-r')
+    ax.plot(prova.get_x()[1][:], prova.get_y()[1][:], prova.get_z()[1][:], '-r') # plot linear lines
+#    ax.plot(prova.get_x()[0][:], prova.get_y()[0][:], prova.get_z()[0][:], '-r')
 #     print prova(1.0, 0.0)
 # 
 #     axis('equal')
