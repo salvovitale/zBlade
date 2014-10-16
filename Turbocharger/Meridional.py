@@ -5,6 +5,7 @@ Created on Mon Oct 06 16:56:43 2014
 @author: Roel
 """
 
+import sys
 zblade_folder= '../'
 sys.path.insert(0, zblade_folder)
 
@@ -14,8 +15,9 @@ from math import pi, sin, tan
 if __name__=='__main__':
 #==============================================================================
     # Input
-    height = 1.0 # meridional channel height
-    length = 1.0 # meridional channel length
+    inlet_diameter = 1.0 # meridional channel inlet_diameter
+    outlet_mean_diameter = 0.5
+    length = 0.7 # meridional channel length
     R1 = 0.2 # inlet width meridional channel
     R2 = 0.4 # outlet width meridional channel
     outlet_angle = 0 # channel outlet angle in degrees
@@ -26,7 +28,7 @@ if __name__=='__main__':
 class MeridionalChannel:
     """Constructs the 2D meridional channel and adds control points to the 
     lower and upper side of the channel's curves.
-    Input:  channel height
+    Input:  channel inlet_diameter
             channel length
             channel inlet width
             channel outlet width
@@ -34,25 +36,31 @@ class MeridionalChannel:
             number of iterations                 
     """
     
-    def __init__(self,height,length,R1,R2,outlet_angle,it):
-        self._height = height
+    def __init__(self,inlet_diameter,outlet_mean_diameter,length,R1,R2,outlet_angle,it = 1):
+        self._inlet_diameter = inlet_diameter
+        self._outlet_mean_diameter = outlet_mean_diameter
         self._length = length
         self._R1 = R1
         self._R2 = R2
         self._outlet_angle = outlet_angle
         self._it = it
-        self._cps_low, self._cps_up = self.__call__()
+#        self._cps_low, self._cps_up = self.__call__()
+        self._cps_low, self._cps_up = self._calculate_cp()
     
-    def __call__(self):
-        """
-        calculates start control points for upper and lower curve and activates
-        _find_newcps to find the new control points. Then returns those to the 
-        initiator.
-        """
-        height, length, R1, R2, outlet_angle, it = self._height, self._length, self._R1, self._R2, self._outlet_angle, self._it
-        cpinlet = Point(0.0,height,0.0)
-        cpmid = Point(0.0,-length*tan(outlet_angle*pi/180.0),0.0)
-        cpoutlet = Point(length,0.0,0.0)
+#    def __call__(self):
+#        """
+#        calculates start control points for upper and lower curve and activates
+#        _find_newcps to find the new control points. Then returns those to the 
+#        initiator.
+#        """
+#        return self._new_cps_low, self._new_cps_up
+        
+    def _calculate_cp(self):
+        
+        inlet_diameter, outlet_mean_diameter, length, R1, R2, outlet_angle, it = self._inlet_diameter, self._outlet_mean_diameter, self._length, self._R1, self._R2, self._outlet_angle, self._it
+        cpinlet = Point(0.0,inlet_diameter,0.0)
+        cpmid = Point(0.0,-length*tan(outlet_angle*pi/180.0)+outlet_mean_diameter-0.5*R2,0.0)
+        cpoutlet = Point(length,outlet_mean_diameter-0.5*R2,0.0)
         cps_low = [cpinlet,cpmid,cpoutlet]
         cps_up = cps_low[:]
         cps_up[0] = Point(cps_low[0].x+R1,cps_low[0].y,   cps_low[0].z)
@@ -62,12 +70,13 @@ class MeridionalChannel:
         self._new_cps_up = self._find_newcps(cps_up)
         return self._new_cps_low, self._new_cps_up
         
+    
     def _find_newcps(self,cps):
         """
         Finds the new curve control points dependent on the amount of 
         iterations desired.
         """
-        self._it = it        
+        it = self._it        
         
         # convert points list to normal list
         A = list(zeros(len(cps)))
@@ -182,9 +191,13 @@ if __name__=='__main__':
     
     close('all')
 
-    test = MeridionalChannel(height,length,R1,R2,outlet_angle,it)
+    test = MeridionalChannel(inlet_diameter,outlet_mean_diameter,length,R1,R2,outlet_angle,it)
     testspline1 = Bspline(test._cps_low)
     testspline2 = Bspline(test._cps_up)
+    
+#    fraction = 0.6
+#    cpfrac = (Point(0.0,inlet_diameter,0.0),Point(0.0,fraction*inlet_diameter,0.0),Point(fraction*length,0.0,0.0),Point(length,0.0,0.0))
+#    testfrac = Bspline(cpfrac)
     
     x1 = zeros(len(test._cps_low))
     y1 = list(x1)
@@ -199,22 +212,28 @@ if __name__=='__main__':
         x2[i] = test._cps_up[i].x
         y2[i] = test._cps_up[i].y
     
+    from mpl_toolkits.mplot3d import Axes3D
     fig1 = plt.figure()
     title('Meridional Channel')
-    axis([-0.6,length*1.1,-0.5,height*1.1])  
+#    ax = plt.axes(projection='3d')
+    axis([-0.16,length*1.1,-0.15,inlet_diameter*1.1])  
     testspline1.plot()
     testspline2.plot()
+#    testfrac.plot()   
     scatter(x1,y1,label = 'Control Points')
     scatter(x2,y2)
     plt.plot([test._cps_low[0].x,test._cps_up[0].x],[test._cps_low[0].y,test._cps_up[0].y],'g',label = 'Inlet')
     plt.plot([test._cps_low[-1].x,test._cps_up[-1].x],[test._cps_low[-1].y,test._cps_up[-1].y],'r',label = 'Outlet')
-#    plt.plot([test._cps_low[-1].x,0.0],[test._cps_low[-1].y,-length*tan(outlet_angle*pi/180.0)],'y-')
+#    plt.plot([test._cps_low[-1].x,0.0],[test._cps_low[-1].y,-length*tan(outlet_angle*pi/180.0)+outlet_mean_diameter-0.5*R2],'y-')
+    plt.plot([0.0,length],[0.0,0.0],'y',label = 'Axis')
     xlabel('length x')
-    ylabel('height y')
+    ylabel('inlet_diameter y')
     legend()
 
-        
-        
+    
+    
+      
+  
         
         
         
