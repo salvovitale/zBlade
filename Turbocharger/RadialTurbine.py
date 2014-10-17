@@ -31,28 +31,25 @@ if __name__=='__main__':
 #==============================================================================  
     
 class RadialTurbine:
+     """
+     Generates the 3D radial turbine from a given 2D meridional channel and 
+     information about the inflow and outflow angles. 
+     """
     
-    def __init__(self,inlet_diameter=1,outlet_mean_diameter=0.5,length=0.7,R1=0.2,R2=0.4,
-                 outlet_angle=0,it=1,beta_dist_hub=[20.0,15.0,-10.0,-50.0],beta_dist_tip=[20.0,5.0,-20,-51.0]):
-        self._inlet_diameter = inlet_diameter
-        self._length = length
-        self._R1 = R1
-        self._R2 = R2
-        self._outlet_angle = outlet_angle
-        self._it = it
+    def __init__(self,Meridional_Channel_2D,beta_dist_hub=[20.0,15.0,-10.0,-50.0],beta_dist_tip=[20.0,5.0,-20,-51.0]):
+        self._length = Meridional_Channel_2D._length
         self._beta_dist_hub = beta_dist_hub
         self._beta_dist_tip = beta_dist_tip
-        self._cps_low_2D = MeridionalChannel(inlet_diameter,outlet_mean_diameter,length,R1,R2,outlet_angle,it)._cps_low
-        self._cps_up_2D = MeridionalChannel(inlet_diameter,outlet_mean_diameter,length,R1,R2,outlet_angle,it)._cps_up
+        self._cps_low_2D = Meridional_Channel_2D._cps_low
+        self._cps_up_2D  = Meridional_Channel_2D._cps_up
         self._hub_2D = Bspline(self._cps_low_2D)
         self._tip_2D = Bspline(self._cps_up_2D)
         self._hub_3D,self._radius_hub = self._3D_curve(self._hub_2D,beta_dist_hub)
         self._tip_3D,self._radius_tip = self._3D_curve(self._tip_2D,beta_dist_tip)
-  
 
     def _3D_curve(self,curve,beta_dist):
         length = self._length
-        beta_interpolated = self._beta_interpolate(beta_dist)
+        beta_interpolated = Interpolation_linear(beta_dist)()
         nbeta = len(beta_interpolated)
         x = zeros(nbeta)
         y = ones(nbeta)
@@ -88,31 +85,50 @@ class RadialTurbine:
             
         return cps_3D,radius
 
-    def _beta_interpolate(self,beta_dist,n=12):
-        # n = number of (linear) interpolations between betas
-        nbeta = len(beta_dist)
-        beta_dist_interpolated = zeros(nbeta+nbeta*n-n)
+        
+class Interpolation_linear:
+    """
+    The class accepts a list of values, finds 'n' interpolation values between
+    the original values and returns the list. 
+    Total added values = n * (amount_of_values - 1)
+    """    
+    
+    def __init__(self,values,n = 10):
+        self._values = values
+        self._n = n # number of interpolations between values   
+        
+    def __call__(self):    
+        self._values_interpolated = self._interpolation()
+        return self._values_interpolated
+        
+    def _interpolation(self):
+        values, n = self._values, self._n
+        
+        amount = len(values)
+        values_interpolated = zeros(amount+amount*n-n)
         
         i = 0 
-        while i < nbeta-1:
-#            print i
+        while i < amount-1:
             ii = i*(n+1)
-#            print ii
             for j in range(0,n+2):
-                beta_dist_interpolated[ii+j] = (beta_dist[i]*(n+1-j) + beta_dist[i+1]*j)/(n+1)
-#            print beta_dist_interpolated
+                values_interpolated[ii+j] = (values[i]*(n+1.0-j) + values[i+1]*j)/(n+1.0)
             i += 1
-#        print beta_dist_interpolated
-        return beta_dist_interpolated
+        return values_interpolated
+        
+    def get_values(self):
+        return self._values
+        
 
 if __name__=='__main__':
         
     close('all')    
-    test = RadialTurbine(inlet_diameter,outlet_mean_diameter,length,R1,R2,outlet_angle,it,beta_dist_hub,beta_dist_tip)
+
+    test2Dmc = MeridionalChannel(inlet_diameter,outlet_mean_diameter,length,R1,R2,outlet_angle,it)  
+    test = RadialTurbine(test2Dmc,beta_dist_hub,beta_dist_tip)
     testhub = Bspline(test._hub_3D)
     testtip = Bspline(test._tip_3D)
-    checkz = RadialTurbine(inlet_diameter,outlet_mean_diameter,length,R1,R2,outlet_angle,it,[0.0,0.0,0.0,-5.0],beta_dist_tip) 
-    checkzz = Bspline(checkz._hub_3D)    
+#    checkz = RadialTurbine(inlet_diameter,outlet_mean_diameter,length,R1,R2,outlet_angle,it,[0.0,0.0,0.0,-5.0],beta_dist_tip) 
+#    checkzz = Bspline(checkz._hub_3D)    
     
     from mpl_toolkits.mplot3d import Axes3D
     fig1 = plt.figure()
@@ -142,16 +158,3 @@ if __name__=='__main__':
 #    testhub.plot()
 #    testtip.plot()
     
-    #pakt z niet goed mee met plotten?
-    #interpoleren tussen hub en tip
-    #andere tip beta angles
-    
-#    for i in range(1,nbeta):
-#            x[i] = (i/(nbeta-1.0))*(curve(1)[0]-curve(0)[0])+curve(0)[0]
-#            radius[i] = curve(x[i]/(curve(1)[0]-curve(0)[0]+curve(0)[0]))     [1]
-##            theta[i] = tan((beta_interpolated[i]-beta_interpolated[i-1])*pi/180.0)*(x[i]-x[i-1])/radius[i]+theta[i-1]
-##            print theta*180.0/pi
-##            z[i] = radius[i]*sin(theta[i]-theta[i-1])+z[i-1]
-#            z[i] = (x[i]-x[i-1])*tan(Angle(beta_interpolated[i])())+z[i-1]
-#            y[i] = sqrt(radius[i]**2-z[i]**2)
-##            rcheck[i] = sqrt(y[i]**2+z[i]**2)
