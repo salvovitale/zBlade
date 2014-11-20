@@ -13,9 +13,9 @@ sys.path.insert(0, zblade_folder)
 from matplotlib.pylab import *
 # from point import Point, Norm, Angle
 # from line  import Line
+import camberline
+from camberline import *
 from point import Point, Angle, normVector, normal2D, Vector
-from bspline import Bspline
-from line import Line
 from math import sqrt, pi, cos, sin, tan
 
 
@@ -26,19 +26,17 @@ class Profile1dDist:
     def __init__(self, dDistCP, p = 2):
         self._dDistCP = dDistCP
         self._p = p
-        self._dDist = Bspline(dDistCP,p)
+        self._dDist = Part.BSplineCurve()
+        self._dDist = Part.buildFromPoles(dDistCP, False, p)
     
-    def __call__(self, u):
-        return self._dDist(u)
-        
-    
-    def plot(self):
-        self._dist.plot()   
+    def __call__(self):
+        return self._dDist
+           
         
 class Profile1CP:
     
-    def __init__(self, camberNormalP, dDist, p = 3, sp = 1.0):              
-        self._camberNormalP = camberNormalP
+    def __init__(self, cambTangentP, dDist, p = 3, sp = 1.0):              
+        self.cambTangentP = cambTangentP
         self._dDist = dDist
         self._p = p
         self._sp = sp
@@ -110,6 +108,19 @@ class Profile1:
         self._prof_s.plot()        
         self._prof_p.plot()
         
+
+if __name__=='__main__':
+    
+    
+    cambdef= CamberlineDef()           
+    cambCP = CamberlineCP(cambdef)
+    camb = Camberline(cambCP)
+    udist = CamberlineUdist(5)
+    cambTangentP = CamberlineTangentP(camb, udist)
+    s_dDistCP = [Vector(0.0, 0.07), Vector(0.25, 0.40), Vector(0.5, 0.02), Vector(1.0, 0.02)]
+    p_dDistCP = [Vector(0.0, 0.07), Vector(0.10, 0.10), Vector(0.5, 0.0), Vector(1.0, 0.02)]
+    s_dDist = Profile1dDist(s_dDistCP)
+    p_dDist = Profile1dDist(p_dDistCP)
 
         
             
