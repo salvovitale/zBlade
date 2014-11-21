@@ -75,7 +75,7 @@ class CamberlineDef(object):
     def _calc_chord(self):
         le, te = self._le, self._te
         self._c = le.distanceToPoint(te)
-        print(self._c)
+#         print(self._c)
     def getLe(self):
         return self._le    
     
@@ -129,7 +129,7 @@ class CamberlineCP(object):
 #         print self._leLine.intersect(self._teLine)
         inter_plane = Part.Plane() # (10,10, self._le)
         int_p = self._leLine.intersect2d(self._teLine, inter_plane)
-        print int_p, int_p[0][0], int_p[0][1]
+#         print int_p, int_p[0][0], int_p[0][1]
         self._int_p = Base.Vector(int_p[0][0], int_p[0][1])
         
      
@@ -162,7 +162,7 @@ class Camberline(object):
     def _constructCamberline(self):
         camb = Part.BSplineCurve()
         camb.buildFromPoles(self._cambCP(),False, self._p)
-        print camb.getPoles(), camb.KnotSequence, camb.Degree
+#         print camb.getPoles(), camb.KnotSequence, camb.Degree
         self._camb = camb     
 #         self._camb = Draft.makeBSpline(self._cambCP())
 #         self._camb.Degree
@@ -243,7 +243,7 @@ class CamberlineTangentP:
         for i in xrange(len(uDist())):
             P.append(camb().value(uDist()[i]))
         self._cambP = P
-        print P
+#         print P
      
      
 #     def _calcDerCambP(self):
@@ -261,7 +261,7 @@ class CamberlineTangentP:
         for i in xrange(len(uDist())):
             T.append(camb().tangent(uDist()[i]))
         self._cambTangP = T
-        print T
+#         print T
                             
      
     def getCamb(self):
